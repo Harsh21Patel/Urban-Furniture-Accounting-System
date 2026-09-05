@@ -14,8 +14,6 @@ async function main() {
     { name: 'Creditors', type: 'LIABILITY' },
     { name: 'Sale Income', type: 'INCOME' },
     { name: 'Purchases Expense', type: 'EXPENSE' },
-    { name: 'Other Expenses', type: 'EXPENSE' },
-    { name: 'Capital Account', type: 'CAPITAL' },
   ];
 
   const accounts = {};
