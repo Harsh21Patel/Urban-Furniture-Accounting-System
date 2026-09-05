@@ -1,16 +1,22 @@
 import prisma from '../config/db.js';
 import { postJournalEntry } from './journalEntry.controller.js';
 
-// Receiving payment against a Customer Invoice: Debit Cash/Bank, Credit Debtors
 export async function payInvoice(req, res, next) {
   try {
-    const { invoiceId, amount, method } = req.body; // method: 'CASH' | 'BANK'
+    const { invoiceId, amount, method } = req.body;
 
-    const invoice = await prisma.invoice.findUnique({ where: { id: invoiceId } });
+    const invoice = await prisma.invoice.findUnique({
+      where: { id: Number(invoiceId) },
+      include: { salesOrder: { include: { contact: true } } },
+    });
     if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
 
     const payment = await prisma.payment.create({
-      data: { invoiceId, amount, method },
+      data: {
+        invoiceId: Number(invoiceId),
+        amount: Number(amount),
+        method: method || 'BANK',
+      },
     });
 
     const cashOrBankAccount = await prisma.account.findFirst({
@@ -21,17 +27,37 @@ export async function payInvoice(req, res, next) {
       where: { type: method === 'CASH' ? 'CASH' : 'BANK' },
     });
 
-    await postJournalEntry({
-      journalId: journal.id,
-      reference: `PAY/${payment.id}`,
-      lines: [
-        { accountId: cashOrBankAccount.id, debit: amount, credit: 0 },
-        { accountId: debtorsAccount.id, debit: 0, credit: amount },
-      ],
-    });
+    if (cashOrBankAccount && debtorsAccount && journal) {
+      await postJournalEntry({
+        journalId: journal.id,
+        reference: `PAY/${payment.id}`,
+        lines: [
+          {
+            accountId: cashOrBankAccount.id,
+            partnerId: invoice.salesOrder.contactId,
+            debit: Number(amount),
+            credit: 0,
+          },
+          {
+            accountId: debtorsAccount.id,
+            partnerId: invoice.salesOrder.contactId,
+            debit: 0,
+            credit: Number(amount),
+          },
+        ],
+      });
+    }
 
-    const newStatus = Number(amount) >= Number(invoice.totalAmount) ? 'PAID' : 'PARTIALLY_PAID';
-    await prisma.invoice.update({ where: { id: invoiceId }, data: { status: newStatus } });
+    const allPayments = await prisma.payment.findMany({
+      where: { invoiceId: Number(invoiceId) },
+    });
+    const paidTotal = allPayments.reduce((s, p) => s + Number(p.amount), 0);
+
+    const newStatus = paidTotal >= Number(invoice.totalAmount) ? 'PAID' : 'PARTIALLY_PAID';
+    await prisma.invoice.update({
+      where: { id: Number(invoiceId) },
+      data: { status: newStatus },
+    });
 
     res.status(201).json(payment);
   } catch (err) {
@@ -39,16 +65,22 @@ export async function payInvoice(req, res, next) {
   }
 }
 
-// Paying a Vendor Bill: Debit Creditors, Credit Cash/Bank
 export async function payBill(req, res, next) {
   try {
     const { vendorBillId, amount, method } = req.body;
 
-    const bill = await prisma.vendorBill.findUnique({ where: { id: vendorBillId } });
+    const bill = await prisma.vendorBill.findUnique({
+      where: { id: Number(vendorBillId) },
+      include: { purchaseOrder: { include: { contact: true } } },
+    });
     if (!bill) return res.status(404).json({ message: 'Vendor bill not found' });
 
     const payment = await prisma.payment.create({
-      data: { vendorBillId, amount, method },
+      data: {
+        vendorBillId: Number(vendorBillId),
+        amount: Number(amount),
+        method: method || 'BANK',
+      },
     });
 
     const cashOrBankAccount = await prisma.account.findFirst({
@@ -59,19 +91,54 @@ export async function payBill(req, res, next) {
       where: { type: method === 'CASH' ? 'CASH' : 'BANK' },
     });
 
-    await postJournalEntry({
-      journalId: journal.id,
-      reference: `PAY/${payment.id}`,
-      lines: [
-        { accountId: creditorsAccount.id, debit: amount, credit: 0 },
-        { accountId: cashOrBankAccount.id, debit: 0, credit: amount },
-      ],
+    if (cashOrBankAccount && creditorsAccount && journal) {
+      await postJournalEntry({
+        journalId: journal.id,
+        reference: `PAY/${payment.id}`,
+        lines: [
+          {
+            accountId: creditorsAccount.id,
+            partnerId: bill.purchaseOrder.contactId,
+            debit: Number(amount),
+            credit: 0,
+          },
+          {
+            accountId: cashOrBankAccount.id,
+            partnerId: bill.purchaseOrder.contactId,
+            debit: 0,
+            credit: Number(amount),
+          },
+        ],
+      });
+    }
+
+    const allPayments = await prisma.payment.findMany({
+      where: { vendorBillId: Number(vendorBillId) },
+    });
+    const paidTotal = allPayments.reduce((s, p) => s + Number(p.amount), 0);
+
+    const newStatus = paidTotal >= Number(bill.totalAmount) ? 'PAID' : 'PARTIALLY_PAID';
+    await prisma.vendorBill.update({
+      where: { id: Number(vendorBillId) },
+      data: { status: newStatus },
     });
 
-    const newStatus = Number(amount) >= Number(bill.totalAmount) ? 'PAID' : 'PARTIALLY_PAID';
-    await prisma.vendorBill.update({ where: { id: vendorBillId }, data: { status: newStatus } });
-
     res.status(201).json(payment);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function listPayments(req, res, next) {
+  try {
+    const payments = await prisma.payment.findMany({
+      include: {
+        invoice: { include: { salesOrder: { include: { contact: true } } } },
+        vendorBill: { include: { purchaseOrder: { include: { contact: true } } } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    res.json(payments);
   } catch (err) {
     next(err);
   }

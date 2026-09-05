@@ -6,6 +6,8 @@ import {
   confirmSalesOrder,
   listSalesOrders,
   generateInvoice,
+  listInvoices,
+  getInvoice,
 } from '../controllers/sales.controller.js';
 
 const router = Router();
@@ -15,5 +17,8 @@ router.get('/orders', listSalesOrders);
 router.post('/orders', requireRole('ADMIN', 'ACCOUNTANT'), createSalesOrder);
 router.post('/orders/:id/confirm', requireRole('ADMIN', 'ACCOUNTANT'), confirmSalesOrder);
 router.post('/orders/:id/invoice', requireRole('ADMIN', 'ACCOUNTANT'), generateInvoice);
+
+router.get('/invoices', listInvoices);
+router.get('/invoices/:id', getInvoice);
 
 export default router;

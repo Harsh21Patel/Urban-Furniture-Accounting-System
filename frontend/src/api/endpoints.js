@@ -4,6 +4,12 @@ import api from './axios.js';
 export const login = (data) => api.post('/auth/login', data);
 export const signup = (data) => api.post('/auth/signup', data);
 
+export const authApi = {
+  getMe: () => api.get('/auth/me'),
+  createUser: (data) => api.post('/auth/create-user', data),
+  listUsers: () => api.get('/auth/users'),
+};
+
 // --- Master Data ---
 export const contactsApi = {
   list: () => api.get('/contacts'),
@@ -18,16 +24,22 @@ export const productsApi = {
   get: (id) => api.get(`/products/${id}`),
   create: (data) => api.post('/products', data),
   update: (id, data) => api.put(`/products/${id}`, data),
+  archive: (id) => api.delete(`/products/${id}`),
 };
 
 export const accountsApi = {
   list: () => api.get('/accounts'),
+  get: (id) => api.get(`/accounts/${id}`),
   create: (data) => api.post('/accounts', data),
+  update: (id, data) => api.put(`/accounts/${id}`, data),
+  archive: (id) => api.delete(`/accounts/${id}`),
 };
 
 export const journalsApi = {
   list: () => api.get('/journals'),
+  get: (id) => api.get(`/journals/${id}`),
   create: (data) => api.post('/journals', data),
+  update: (id, data) => api.put(`/journals/${id}`, data),
 };
 
 export const journalEntriesApi = {
@@ -37,12 +49,19 @@ export const journalEntriesApi = {
 
 export const analyticsApi = {
   list: () => api.get('/analytics'),
+  get: (id) => api.get(`/analytics/${id}`),
   create: (data) => api.post('/analytics', data),
+  update: (id, data) => api.put(`/analytics/${id}`, data),
 };
 
 export const budgetsApi = {
   list: () => api.get('/budgets'),
+  get: (id) => api.get(`/budgets/${id}`),
   create: (data) => api.post('/budgets', data),
+  confirm: (id) => api.post(`/budgets/${id}/confirm`),
+  revise: (id, data) => api.post(`/budgets/${id}/revise`, data),
+  cancel: (id) => api.post(`/budgets/${id}/cancel`),
+  getTransactions: (id) => api.get(`/budgets/${id}/transactions`),
 };
 
 // --- Transaction Flow ---
@@ -51,15 +70,21 @@ export const salesApi = {
   createOrder: (data) => api.post('/sales/orders', data),
   confirmOrder: (id) => api.post(`/sales/orders/${id}/confirm`),
   generateInvoice: (id, data) => api.post(`/sales/orders/${id}/invoice`, data),
+  listInvoices: (params) => api.get('/sales/invoices', { params }),
+  getInvoice: (id) => api.get(`/sales/invoices/${id}`),
 };
 
 export const purchaseApi = {
   listOrders: () => api.get('/purchases/orders'),
   createOrder: (data) => api.post('/purchases/orders', data),
+  confirmOrder: (id) => api.post(`/purchases/orders/${id}/confirm`),
   convertToBill: (id, data) => api.post(`/purchases/orders/${id}/bill`, data),
+  listBills: (params) => api.get('/purchases/bills', { params }),
+  getBill: (id) => api.get(`/purchases/bills/${id}`),
 };
 
 export const paymentsApi = {
+  list: () => api.get('/payments'),
   payInvoice: (data) => api.post('/payments/invoice', data),
   payBill: (data) => api.post('/payments/bill', data),
 };
@@ -69,4 +94,7 @@ export const reportsApi = {
   balanceSheet: (asOf) => api.get('/reports/balance-sheet', { params: { asOf } }),
   profitLoss: (from, to) => api.get('/reports/profit-loss', { params: { from, to } }),
   budgetReport: () => api.get('/reports/budget'),
+  ledgerReport: (params) => api.get('/reports/ledger', { params }),
+  journalReport: (params) => api.get('/reports/journal', { params }),
 };
+
