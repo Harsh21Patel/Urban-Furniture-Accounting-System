@@ -1,0 +1,261 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- AUTH & USERS ----------
+
+enum Role {
+  ADMIN
+  ACCOUNTANT
+  CONTACT_USER
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  loginId   String   @unique
+  email     String   @unique
+  password  String
+  role      Role
+  contactId Int?     // links a CONTACT_USER to their Contact record
+  contact   Contact? @relation(fields: [contactId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+// ---------- MASTER DATA ----------
+
+enum ContactType {
+  CUSTOMER
+  VENDOR
+  BOTH
+}
+
+model Contact {
+  id        Int         @id @default(autoincrement())
+  name      String
+  type      ContactType
+  email     String      @unique
+  mobile    String?
+  street    String?
+  city      String?
+  state     String?
+  country   String?
+  pincode   String?
+  imageUrl  String?
+  archived  Boolean     @default(false)
+  createdAt DateTime    @default(now())
+
+  users          User[]
+  salesOrders    SalesOrder[]
+  purchaseOrders PurchaseOrder[]
+}
+
+enum ProductType {
+  GOODS
+  SERVICE
+  COMBO
+}
+
+model Product {
+  id         Int         @id @default(autoincrement())
+  name       String
+  type       ProductType
+  category   String
+  salesPrice Decimal     @db.Decimal(12, 2)
+  cost       Decimal     @db.Decimal(12, 2)
+  imageUrl   String?
+  archived   Boolean     @default(false)
+
+  salesLines    SalesOrderLine[]
+  purchaseLines PurchaseOrderLine[]
+}
+
+enum AccountType {
+  ASSET
+  LIABILITY
+  INCOME
+  EXPENSE
+  CAPITAL
+}
+
+model Account {
+  id       Int         @id @default(autoincrement())
+  name     String
+  type     AccountType
+  archived Boolean     @default(false)
+
+  journalLines     JournalEntryLine[]
+  defaultForJournal Journal[]         @relation("DefaultAccount")
+}
+
+enum JournalType {
+  SALES
+  PURCHASE
+  BANK
+  CASH
+  GENERAL
+}
+
+model Journal {
+  id              Int         @id @default(autoincrement())
+  name            String
+  type            JournalType
+  defaultAccountId Int?
+  defaultAccount  Account?    @relation("DefaultAccount", fields: [defaultAccountId], references: [id])
+
+  entries JournalEntry[]
+}
+
+// ---------- DOUBLE-ENTRY LEDGER ----------
+
+model JournalEntry {
+  id        Int      @id @default(autoincrement())
+  journalId Int
+  journal   Journal  @relation(fields: [journalId], references: [id])
+  date      DateTime @default(now())
+  reference String?  // e.g. INV/0001, BILL/0001, PAY/0001
+  lines     JournalEntryLine[]
+  createdAt DateTime @default(now())
+}
+
+model JournalEntryLine {
+  id             Int          @id @default(autoincrement())
+  journalEntryId Int
+  journalEntry   JournalEntry @relation(fields: [journalEntryId], references: [id])
+  accountId      Int
+  account        Account      @relation(fields: [accountId], references: [id])
+  debit          Decimal      @default(0) @db.Decimal(12, 2)
+  credit         Decimal      @default(0) @db.Decimal(12, 2)
+  analyticId     Int?
+  analytic       AnalyticAccount? @relation(fields: [analyticId], references: [id])
+}
+
+// ---------- ANALYTICS & BUDGET ----------
+
+enum AnalyticType {
+  INCOME
+  EXPENSE
+}
+
+model AnalyticAccount {
+  id   Int          @id @default(autoincrement())
+  name String
+  type AnalyticType
+
+  journalLines JournalEntryLine[]
+  budgets      Budget[]
+}
+
+model Budget {
+  id                Int             @id @default(autoincrement())
+  name              String
+  periodStart       DateTime
+  periodEnd         DateTime
+  responsiblePerson String
+  analyticId        Int
+  analytic          AnalyticAccount @relation(fields: [analyticId], references: [id])
+  committedAmount   Decimal         @db.Decimal(12, 2)
+  achievedAmount    Decimal         @default(0) @db.Decimal(12, 2)
+}
+
+// ---------- SALES FLOW ----------
+
+enum OrderStatus {
+  DRAFT
+  CONFIRMED
+  INVOICED
+  CANCELLED
+}
+
+model SalesOrder {
+  id        Int              @id @default(autoincrement())
+  contactId Int
+  contact   Contact          @relation(fields: [contactId], references: [id])
+  date      DateTime         @default(now())
+  status    OrderStatus      @default(DRAFT)
+  lines     SalesOrderLine[]
+  invoice   Invoice?
+}
+
+model SalesOrderLine {
+  id           Int        @id @default(autoincrement())
+  salesOrderId Int
+  salesOrder   SalesOrder @relation(fields: [salesOrderId], references: [id])
+  productId    Int
+  product      Product    @relation(fields: [productId], references: [id])
+  quantity     Int
+  unitPrice    Decimal    @db.Decimal(12, 2)
+  taxPercent   Decimal    @default(0) @db.Decimal(5, 2)
+}
+
+enum InvoiceStatus {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+}
+
+model Invoice {
+  id           Int           @id @default(autoincrement())
+  salesOrderId Int           @unique
+  salesOrder   SalesOrder    @relation(fields: [salesOrderId], references: [id])
+  invoiceDate  DateTime      @default(now())
+  dueDate      DateTime?
+  status       InvoiceStatus @default(UNPAID)
+  totalAmount  Decimal       @db.Decimal(12, 2)
+  payments     Payment[]
+}
+
+// ---------- PURCHASE FLOW ----------
+
+model PurchaseOrder {
+  id        Int                 @id @default(autoincrement())
+  contactId Int
+  contact   Contact             @relation(fields: [contactId], references: [id])
+  date      DateTime            @default(now())
+  status    OrderStatus         @default(DRAFT)
+  lines     PurchaseOrderLine[]
+  bill      VendorBill?
+}
+
+model PurchaseOrderLine {
+  id              Int           @id @default(autoincrement())
+  purchaseOrderId Int
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  productId       Int
+  product         Product       @relation(fields: [productId], references: [id])
+  quantity        Int
+  unitPrice       Decimal       @db.Decimal(12, 2)
+}
+
+model VendorBill {
+  id              Int           @id @default(autoincrement())
+  purchaseOrderId Int           @unique
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  billDate        DateTime      @default(now())
+  dueDate         DateTime?
+  status          InvoiceStatus @default(UNPAID)
+  totalAmount     Decimal       @db.Decimal(12, 2)
+  payments        Payment[]
+}
+
+// ---------- PAYMENTS ----------
+
+enum PaymentMethod {
+  CASH
+  BANK
+}
+
+model Payment {
+  id           Int           @id @default(autoincrement())
+  amount       Decimal       @db.Decimal(12, 2)
+  method       PaymentMethod
+  date         DateTime      @default(now())
+  invoiceId    Int?
+  invoice      Invoice?      @relation(fields: [invoiceId], references: [id])
+  vendorBillId Int?
+  vendorBill   VendorBill?   @relation(fields: [vendorBillId], references: [id])
+}
