@@ -43,41 +43,41 @@ export default function CreateUser() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
       <Navbar />
-      <main className="max-w-4xl mx-auto px-4 py-10">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 sm:p-10 space-y-8">
+      <main className="max-w-4xl mx-auto px-4 py-8">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md p-6 space-y-6">
           
           {/* Header */}
-          <div className="flex items-center gap-4 pb-6 border-b border-slate-800">
-            <div className="w-14 h-14 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 flex items-center justify-center shadow-lg">
-              <Building2 className="w-7 h-7" />
+          <div className="flex items-center gap-3 pb-4 border-b border-gray-200 dark:border-gray-800">
+            <div className="w-10 h-10 rounded bg-primary dark:bg-primary-dark text-white flex items-center justify-center">
+              <Building2 className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-2xl font-extrabold text-white">Create User</h1>
-              <p className="text-sm text-slate-400">Admin management console to provision user accounts and roles</p>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">Create User</h1>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Admin management console to provision user accounts and roles</p>
             </div>
           </div>
 
           {error && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-center gap-3 text-red-400 text-sm">
-              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 rounded p-3 flex items-center gap-2 text-red-600 dark:text-red-400 text-xs">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           {success && (
-            <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 flex items-center gap-3 text-emerald-400 text-sm">
-              <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+            <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded p-3 flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-xs">
+              <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
               <span>{success}</span>
             </div>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Form */}
-            <form onSubmit={handleSubmit} className="lg:col-span-2 space-y-5">
+            <form onSubmit={handleSubmit} className="lg:col-span-2 space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                   Name
                 </label>
                 <input
@@ -87,12 +87,12 @@ export default function CreateUser() {
                   placeholder="Full Name (e.g., Nimesh Pathak)"
                   value={form.name}
                   onChange={handleChange}
-                  className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                  className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                   Login ID
                 </label>
                 <input
@@ -102,12 +102,12 @@ export default function CreateUser() {
                   placeholder="Unique ID (6-12 characters)"
                   value={form.loginId}
                   onChange={handleChange}
-                  className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                  className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                   E-Mail ID
                 </label>
                 <input
@@ -117,15 +117,15 @@ export default function CreateUser() {
                   placeholder="Unique email address"
                   value={form.email}
                   onChange={handleChange}
-                  className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                  className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
                   Role
                 </label>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-2">
                   {[
                     { id: 'ADMIN', label: 'Administrator', desc: 'All Rights' },
                     { id: 'ACCOUNTANT', label: 'Accountant', desc: 'Invoicing & Reports' },
@@ -135,14 +135,14 @@ export default function CreateUser() {
                       type="button"
                       key={r.id}
                       onClick={() => setForm({ ...form, role: r.id })}
-                      className={`p-3 rounded-xl border text-left transition ${
+                      className={`p-2.5 rounded border text-left ${
                         form.role === r.id
-                          ? 'bg-indigo-600/20 border-indigo-500 text-white'
-                          : 'bg-slate-800/60 border-slate-700/60 text-slate-400 hover:border-slate-600'
+                          ? 'bg-primary/10 border-primary text-primary dark:bg-primary-dark/20 dark:border-primary-dark dark:text-primary-dark font-medium'
+                          : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
                       }`}
                     >
-                      <p className="text-xs font-bold text-slate-200">{r.label}</p>
-                      <p className="text-[10px] text-slate-400 mt-0.5">{r.desc}</p>
+                      <p className="text-xs font-semibold">{r.label}</p>
+                      <p className="text-[10px] opacity-80 mt-0.5">{r.desc}</p>
                     </button>
                   ))}
                 </div>
@@ -150,14 +150,14 @@ export default function CreateUser() {
 
               {form.role === 'CONTACT_USER' && (
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                     Link Contact Master (Optional)
                   </label>
                   <select
                     name="contactId"
                     value={form.contactId}
                     onChange={handleChange}
-                    className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                   >
                     <option value="">Create / Link automatically by Email</option>
                     {contacts.map((c) => (
@@ -170,7 +170,7 @@ export default function CreateUser() {
               )}
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                   Password
                 </label>
                 <input
@@ -180,12 +180,12 @@ export default function CreateUser() {
                   placeholder="Must contain uppercase, lowercase, special char and >8 chars"
                   value={form.password}
                   onChange={handleChange}
-                  className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                  className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                   Re-Enter Password
                 </label>
                 <input
@@ -195,22 +195,22 @@ export default function CreateUser() {
                   placeholder="Re-enter password"
                   value={form.confirmPassword}
                   onChange={handleChange}
-                  className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                  className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
               </div>
 
-              <div className="flex items-center gap-4 pt-4">
+              <div className="flex items-center gap-3 pt-2">
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold py-2.5 px-4 rounded-xl shadow-lg shadow-indigo-600/30 transition disabled:opacity-50"
+                  className="flex-1 bg-primary hover:bg-primary-hover dark:bg-primary-dark dark:hover:bg-primary text-white font-medium py-2 px-4 rounded text-sm disabled:opacity-50"
                 >
                   {loading ? 'Creating...' : 'Create'}
                 </button>
                 <button
                   type="button"
                   onClick={() => navigate('/dashboard')}
-                  className="px-6 py-2.5 border border-slate-700 text-slate-300 hover:bg-slate-800 rounded-xl font-semibold transition"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded text-sm font-medium"
                 >
                   Cancel
                 </button>
@@ -218,37 +218,37 @@ export default function CreateUser() {
             </form>
 
             {/* Sidebar Guide */}
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5 space-y-6">
-              <h3 className="text-sm font-bold text-white uppercase tracking-wider">Role Definitions</h3>
+            <div className="bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-md p-4 space-y-4">
+              <h3 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">Role Definitions</h3>
               
-              <div className="space-y-4 text-xs">
-                <div className="flex gap-3 items-start">
-                  <ShieldCheck className="w-5 h-5 text-indigo-400 flex-shrink-0 mt-0.5" />
+              <div className="space-y-3 text-xs">
+                <div className="flex gap-2.5 items-start">
+                  <ShieldCheck className="w-4 h-4 text-primary dark:text-primary-dark flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-semibold text-indigo-300">Administrator (Admin)</p>
-                    <p className="text-slate-400 mt-0.5">Has all access rights. Creates, modifies, archives master data, records transactions, and views reports.</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">Administrator (Admin)</p>
+                    <p className="text-gray-500 dark:text-gray-400 mt-0.5">Has all access rights. Creates, modifies, archives master data, records transactions, and views reports.</p>
                   </div>
                 </div>
 
-                <div className="flex gap-3 items-start">
-                  <UserCheck className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                <div className="flex gap-2.5 items-start">
+                  <UserCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-semibold text-emerald-300">Accountant (Invoicing User)</p>
-                    <p className="text-slate-400 mt-0.5">Creates master data, records sales/purchases/journals, registers payments, and views financial reports.</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">Accountant (Invoicing User)</p>
+                    <p className="text-gray-500 dark:text-gray-400 mt-0.5">Creates master data, records sales/purchases/journals, registers payments, and views financial reports.</p>
                   </div>
                 </div>
 
-                <div className="flex gap-3 items-start">
-                  <CreditCard className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                <div className="flex gap-2.5 items-start">
+                  <CreditCard className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-semibold text-amber-300">User (Contact User)</p>
-                    <p className="text-slate-400 mt-0.5">Can only view their own invoices/bills in paid/unpaid status and directly pay dues from portal.</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">User (Contact User)</p>
+                    <p className="text-gray-500 dark:text-gray-400 mt-0.5">Can only view their own invoices/bills in paid/unpaid status and directly pay dues from portal.</p>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-700/60 text-xs text-slate-400 space-y-1">
-                <p className="font-semibold text-slate-300">Validation Checks:</p>
+              <div className="pt-3 border-t border-gray-200 dark:border-gray-700/60 text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                <p className="font-semibold text-gray-700 dark:text-gray-300">Validation Checks:</p>
                 <p>1. Login Id: 6-12 characters, unique.</p>
                 <p>2. Email: Unique in database.</p>
                 <p>3. Password: &gt;8 chars with uppercase, lowercase, special char.</p>

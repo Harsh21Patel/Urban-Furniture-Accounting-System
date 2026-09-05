@@ -1,27 +1,29 @@
 // Simple reusable list-view table. columns: [{ key, label }]
 export default function DataTable({ columns, rows, onRowClick }) {
   return (
-    <table className="w-full bg-white shadow rounded-lg overflow-hidden">
-      <thead className="bg-gray-100 text-left text-sm">
-        <tr>
-          {columns.map((c) => (
-            <th key={c.key} className="px-4 py-2">{c.label}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row) => (
-          <tr
-            key={row.id}
-            className="border-t hover:bg-gray-50 cursor-pointer text-sm"
-            onClick={() => onRowClick?.(row)}
-          >
+    <div className="w-full border border-gray-200 dark:border-gray-800 rounded overflow-hidden">
+      <table className="w-full bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 text-xs">
+        <thead className="bg-gray-50 dark:bg-gray-800/60 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-800">
+          <tr>
             {columns.map((c) => (
-              <td key={c.key} className="px-4 py-2">{row[c.key]}</td>
+              <th key={c.key} className="px-3 py-2 border-r border-gray-200 dark:border-gray-800 last:border-r-0">{c.label}</th>
             ))}
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr
+              key={row.id}
+              className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/40 cursor-pointer"
+              onClick={() => onRowClick?.(row)}
+            >
+              {columns.map((c) => (
+                <td key={c.key} className="px-3 py-2 border-r border-gray-200 dark:border-gray-800 last:border-r-0">{row[c.key]}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

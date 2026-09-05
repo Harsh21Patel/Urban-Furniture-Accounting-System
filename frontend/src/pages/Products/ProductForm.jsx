@@ -137,48 +137,48 @@ export default function ProductForm() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-16 transition-colors duration-200">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 pb-16">
       <Navbar />
 
-      <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
-        {/* Yellow Header Banner matching Image 2/3 style */}
-        <div className="bg-amber-100 border border-amber-300 rounded-xl px-6 py-2 text-center shadow-sm dark:bg-amber-500/10 dark:border-amber-500/30">
-          <h2 className="text-base font-extrabold text-amber-900 dark:text-amber-300">Master Data: Product Master Form</h2>
+      <main className="max-w-4xl mx-auto px-4 py-6 space-y-4">
+        {/* Banner */}
+        <div className="bg-amber-50 border border-amber-200 rounded-md px-4 py-2 text-center dark:bg-amber-900/20 dark:border-amber-800/40">
+          <h2 className="text-sm font-bold text-amber-900 dark:text-amber-300">Master Data: Product Master Form</h2>
           <p className="text-xs text-amber-800/80 dark:text-amber-400/80">
             Define product details, category, default sales price, and default purchase cost.
           </p>
         </div>
 
         {/* Main Card */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm dark:shadow-xl p-6 sm:p-10 space-y-8">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md p-6 space-y-6">
           {/* Header Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-800">
+            <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => navigate('/products')}
-                className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition"
+                className="p-2 rounded bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
               >
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="w-4 h-4" />
               </button>
               <div>
                 <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">
+                  <h1 className="text-xl font-bold text-gray-900 dark:text-white">
                     {isEdit ? form.name || 'Edit Product' : 'New Product Master'}
                   </h1>
                   {isEdit && productData && (
                     productData.archived ? (
-                      <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 dark:bg-rose-500/10 dark:text-rose-400">
+                      <span className="px-2 py-0.5 rounded text-xs font-semibold bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400">
                         Archived
                       </span>
                     ) : (
-                      <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400">
+                      <span className="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
                         Active
                       </span>
                     )
                   )}
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   {isEdit ? 'Update product prices & configuration' : 'Enter attributes to register product'}
                 </p>
               </div>
@@ -190,18 +190,18 @@ export default function ProductForm() {
                   <button
                     type="button"
                     onClick={handleUnarchive}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 text-xs font-bold transition"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 text-xs font-semibold"
                   >
-                    <RotateCcw className="w-4 h-4" />
+                    <RotateCcw className="w-3.5 h-3.5" />
                     <span>Unarchive</span>
                   </button>
                 ) : (
                   <button
                     type="button"
                     onClick={handleArchive}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-400 text-xs font-bold transition"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-900/20 dark:text-rose-400 text-xs font-semibold"
                   >
-                    <Archive className="w-4 h-4" />
+                    <Archive className="w-3.5 h-3.5" />
                     <span>Archive Product</span>
                   </button>
                 )}
@@ -211,15 +211,15 @@ export default function ProductForm() {
 
           {/* Feedback Messages */}
           {error && (
-            <div className="bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 rounded-xl p-4 flex items-center gap-3 text-rose-700 dark:text-rose-400 text-xs font-semibold">
-              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-md p-3 flex items-center gap-2.5 text-rose-700 dark:text-rose-400 text-xs font-medium">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           {successMsg && (
-            <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 rounded-xl p-4 flex items-center gap-3 text-emerald-700 dark:text-emerald-400 text-xs font-semibold">
-              <Check className="w-5 h-5 flex-shrink-0" />
+            <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-md p-3 flex items-center gap-2.5 text-emerald-700 dark:text-emerald-400 text-xs font-medium">
+              <Check className="w-4 h-4 flex-shrink-0" />
               <span>{successMsg}</span>
             </div>
           )}
@@ -227,23 +227,23 @@ export default function ProductForm() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Product Image Preview */}
-              <div className="md:col-span-1 space-y-3">
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+              <div className="md:col-span-1 space-y-2">
+                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                   Product Image
                 </label>
-                <div className="bg-slate-50 dark:bg-slate-800/60 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl p-4 text-center flex flex-col items-center justify-center min-h-[180px]">
+                <div className="bg-gray-50 dark:bg-gray-800/60 border border-dashed border-gray-300 dark:border-gray-700 rounded-md p-4 text-center flex flex-col items-center justify-center min-h-[160px]">
                   {form.imageUrl ? (
                     <img
                       src={form.imageUrl}
                       alt="Product Preview"
-                      className="w-full h-36 rounded-xl object-cover border border-indigo-500/50 shadow-md"
+                      className="w-full h-32 rounded object-cover border border-gray-200 dark:border-gray-700"
                     />
                   ) : (
-                    <div className="w-14 h-14 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-400 mb-2">
-                      <ImageIcon className="w-6 h-6" />
+                    <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-400 mb-2">
+                      <ImageIcon className="w-5 h-5" />
                     </div>
                   )}
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2">Paste image URL below</p>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-2">Paste image URL below</p>
                 </div>
                 <input
                   name="imageUrl"
@@ -251,14 +251,14 @@ export default function ProductForm() {
                   placeholder="https://images.unsplash.com/..."
                   value={form.imageUrl}
                   onChange={handleChange}
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                  className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-3 py-1.5 text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
               </div>
 
               {/* Product Form Fields */}
               <div className="md:col-span-2 space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                     Product Name *
                   </label>
                   <input
@@ -268,20 +268,20 @@ export default function ProductForm() {
                     placeholder="e.g. Ergonomic Office Desk, Executive Chair"
                     value={form.name}
                     onChange={handleChange}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition font-medium"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-medium"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                       Product Type *
                     </label>
                     <select
                       name="type"
                       value={form.type}
                       onChange={handleChange}
-                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition font-medium"
+                      className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-medium"
                     >
                       <option value="GOODS">Goods (Physical Stock)</option>
                       <option value="SERVICE">Service (Non-inventory)</option>
@@ -290,7 +290,7 @@ export default function ProductForm() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                       Category *
                     </label>
                     <input
@@ -300,41 +300,41 @@ export default function ProductForm() {
                       placeholder="e.g. Office, Living Room, Storage"
                       value={form.category}
                       onChange={handleChange}
-                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                      className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                     />
                   </div>
                 </div>
 
-                {/* Info Callout for Product Type Behavior */}
-                <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 flex items-start gap-2.5 text-xs text-slate-600 dark:text-slate-400">
-                  <Info className="w-4 h-4 text-indigo-600 dark:text-indigo-400 flex-shrink-0 mt-0.5" />
+                {/* Info Callout */}
+                <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-800 rounded-md p-3 flex items-start gap-2.5 text-xs text-gray-600 dark:text-gray-400">
+                  <Info className="w-4 h-4 text-primary dark:text-primary-dark flex-shrink-0 mt-0.5" />
                   <div>
                     {form.type === 'GOODS' && (
                       <p>
-                        <strong className="text-slate-900 dark:text-white">Goods</strong> affect physical inventory stock movements upon purchase bill or customer invoice receipt.
+                        <strong className="text-gray-900 dark:text-white">Goods</strong> affect physical inventory stock movements upon purchase bill or customer invoice receipt.
                       </p>
                     )}
                     {form.type === 'SERVICE' && (
                       <p>
-                        <strong className="text-slate-900 dark:text-white">Service</strong> products do not create physical stock movements or track warehouse inventory quantity.
+                        <strong className="text-gray-900 dark:text-white">Service</strong> products do not create physical stock movements or track warehouse inventory quantity.
                       </p>
                     )}
                     {form.type === 'COMBO' && (
                       <p>
-                        <strong className="text-slate-900 dark:text-white">Combo</strong> products represent bundled packages sold or purchased together.
+                        <strong className="text-gray-900 dark:text-white">Combo</strong> products represent bundled packages sold or purchased together.
                       </p>
                     )}
                   </div>
                 </div>
 
                 {/* Pricing Fields */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-200 dark:border-slate-800">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-gray-200 dark:border-gray-800">
                   <div>
-                    <label className="block text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                       Default Sales Price (₹) *
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-semibold">₹</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">₹</span>
                       <input
                         name="salesPrice"
                         type="number"
@@ -344,18 +344,18 @@ export default function ProductForm() {
                         placeholder="100.00"
                         value={form.salesPrice}
                         onChange={handleChange}
-                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl pl-8 pr-4 py-2.5 text-sm text-slate-900 dark:text-white font-bold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                        className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded pl-7 pr-3 py-2 text-sm text-gray-900 dark:text-white font-bold placeholder-gray-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                       />
                     </div>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Populated automatically in Sales Orders.</p>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">Populated automatically in Sales Orders.</p>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                       Default Cost / Purchase Price (₹) *
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-semibold">₹</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">₹</span>
                       <input
                         name="cost"
                         type="number"
@@ -365,29 +365,29 @@ export default function ProductForm() {
                         placeholder="50.00"
                         value={form.cost}
                         onChange={handleChange}
-                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl pl-8 pr-4 py-2.5 text-sm text-slate-900 dark:text-white font-bold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                        className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded pl-7 pr-3 py-2 text-sm text-gray-900 dark:text-white font-bold placeholder-gray-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                       />
                     </div>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Populated automatically in Purchase Orders.</p>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">Populated automatically in Purchase Orders.</p>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-4 pt-6 border-t border-slate-200 dark:border-slate-800">
+            <div className="flex items-center gap-3 pt-4 border-t border-gray-200 dark:border-gray-800">
               <button
                 type="submit"
                 disabled={loading}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold px-6 py-2.5 rounded-xl shadow-md shadow-indigo-600/20 transition disabled:opacity-50"
+                className="flex items-center gap-1.5 bg-primary hover:bg-primary-hover dark:bg-primary-dark text-white text-xs font-semibold px-4 py-2 rounded transition disabled:opacity-50"
               >
-                <Check className="w-4 h-4" />
+                <Check className="w-3.5 h-3.5" />
                 <span>{isEdit ? 'Save Changes' : 'Create Product'}</span>
               </button>
               <button
                 type="button"
                 onClick={() => navigate('/products')}
-                className="px-6 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-sm font-semibold transition"
+                className="px-4 py-2 rounded border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 text-xs font-medium"
               >
                 Back
               </button>

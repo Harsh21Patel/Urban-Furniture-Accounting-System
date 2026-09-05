@@ -47,29 +47,29 @@ export default function Journals() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 pb-16">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 pb-16">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-4">
         
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-md">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/dashboard')}
-              className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
+              className="p-2 rounded bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4" />
             </button>
             <div>
-              <h1 className="text-2xl font-extrabold text-white">Journals Master (List View)</h1>
-              <p className="text-xs text-slate-400">Organize accounting transactions into Sales, Purchase, Bank, and Cash registers</p>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">Journals Master (List View)</h1>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Organize accounting transactions into Sales, Purchase, Bank, and Cash registers</p>
             </div>
           </div>
 
           <button
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg shadow-indigo-600/30 transition"
+            className="flex items-center gap-1.5 bg-primary hover:bg-primary-hover dark:bg-primary-dark text-white text-xs font-semibold px-3 py-2 rounded transition"
           >
             <Plus className="w-4 h-4" />
             <span>New Journal</span>
@@ -77,48 +77,48 @@ export default function Journals() {
         </div>
 
         {/* Table */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md overflow-hidden">
           {loading ? (
-            <div className="text-center py-16 text-slate-400">Loading journals...</div>
+            <div className="text-center py-12 text-xs text-gray-500 dark:text-gray-400">Loading journals...</div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-slate-300">
-                <thead className="bg-slate-800/80 text-xs uppercase text-slate-400 font-semibold tracking-wider border-b border-slate-800">
+              <table className="w-full text-left text-xs text-gray-700 dark:text-gray-300">
+                <thead className="bg-gray-50 dark:bg-gray-800/60 uppercase text-[11px] text-gray-600 dark:text-gray-400 font-semibold border-b border-gray-200 dark:border-gray-800">
                   <tr>
-                    <th className="px-6 py-4">Journal Name</th>
-                    <th className="px-6 py-4">Type</th>
-                    <th className="px-6 py-4">Default Mapped Account</th>
+                    <th className="px-4 py-3">Journal Name</th>
+                    <th className="px-4 py-3">Type</th>
+                    <th className="px-4 py-3">Default Mapped Account</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800">
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                   {journals.map((j) => (
-                    <tr key={j.id} className="hover:bg-slate-800/50 transition">
-                      <td className="px-6 py-4 font-bold text-white flex items-center gap-2">
-                        <BookOpen className="w-4 h-4 text-indigo-400" />
+                    <tr key={j.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/40">
+                      <td className="px-4 py-3 font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                        <BookOpen className="w-4 h-4 text-primary dark:text-primary-dark" />
                         <span>{j.name}</span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-3">
                         <span
-                          className={`inline-block px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider ${
+                          className={`inline-block px-2 py-0.5 rounded text-[11px] font-semibold uppercase ${
                             j.type === 'SALES'
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                              ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
                               : j.type === 'PURCHASE'
-                              ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                              ? 'bg-amber-50 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
                               : j.type === 'BANK'
-                              ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                              ? 'bg-blue-50 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800'
                               : j.type === 'CASH'
-                              ? 'bg-teal-500/10 text-teal-400 border border-teal-500/20'
-                              : 'bg-slate-800 text-slate-300'
+                              ? 'bg-teal-50 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400 border border-teal-200 dark:border-teal-800'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
                           }`}
                         >
                           {j.type}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-slate-300 font-semibold">
+                      <td className="px-4 py-3 text-gray-700 dark:text-gray-300 font-medium">
                         {j.defaultAccount ? (
-                          <span className="text-indigo-300">{j.defaultAccount.name} A/c</span>
+                          <span className="text-primary dark:text-primary-dark font-semibold">{j.defaultAccount.name} A/c</span>
                         ) : (
-                          <span className="text-slate-500 italic">None</span>
+                          <span className="text-gray-400 dark:text-gray-500 italic">None</span>
                         )}
                       </td>
                     </tr>
@@ -131,12 +131,12 @@ export default function Journals() {
 
         {/* Modal */}
         {showModal && (
-          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6 animate-in fade-in zoom-in-95">
-              <h2 className="text-xl font-bold text-white">Create New Journal</h2>
+          <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md p-6 max-w-md w-full space-y-4">
+              <h2 className="text-base font-bold text-gray-900 dark:text-white">Create New Journal</h2>
 
               {error && (
-                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-red-400 text-xs flex items-center gap-2">
+                <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-md p-3 text-rose-700 dark:text-rose-400 text-xs flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   <span>{error}</span>
                 </div>
@@ -144,7 +144,7 @@ export default function Journals() {
 
               <form onSubmit={handleCreate} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                     Journal Name *
                   </label>
                   <input
@@ -153,18 +153,18 @@ export default function Journals() {
                     placeholder="e.g., Sales Journal, Bank Journal"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-3 py-2 text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                     Journal Type *
                   </label>
                   <select
                     value={type}
                     onChange={(e) => setType(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-3 py-2 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                   >
                     <option value="SALES">Sales</option>
                     <option value="PURCHASE">Purchase</option>
@@ -175,13 +175,13 @@ export default function Journals() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                     Default Mapped Account (From Chart of Accounts)
                   </label>
                   <select
                     value={defaultAccountId}
                     onChange={(e) => setDefaultAccountId(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-3 py-2 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                   >
                     <option value="">-- Select Mapped Account --</option>
                     {accounts.map((a) => (
@@ -192,17 +192,17 @@ export default function Journals() {
                   </select>
                 </div>
 
-                <div className="flex items-center gap-3 pt-4 border-t border-slate-800">
+                <div className="flex items-center gap-3 pt-3 border-t border-gray-200 dark:border-gray-800">
                   <button
                     type="submit"
-                    className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold py-2.5 rounded-xl shadow-lg transition"
+                    className="flex-1 bg-primary hover:bg-primary-hover dark:bg-primary-dark text-white font-semibold text-xs py-2 rounded transition"
                   >
                     Create Journal
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowModal(false)}
-                    className="px-4 py-2.5 border border-slate-700 text-slate-300 hover:bg-slate-800 rounded-xl font-semibold transition"
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded text-xs font-medium"
                   >
                     Cancel
                   </button>

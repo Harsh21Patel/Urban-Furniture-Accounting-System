@@ -131,44 +131,44 @@ export default function BudgetList() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-16 transition-colors duration-200">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 pb-16">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-4">
         
-        {/* Yellow Header Banner matching Images 8 & 9 */}
-        <div className="bg-amber-100 border border-amber-300 rounded-xl px-6 py-2.5 text-center shadow-sm dark:bg-amber-500/10 dark:border-amber-500/30">
-          <h2 className="text-base font-extrabold text-amber-900 dark:text-amber-300">Budget Flow (Form View & Lifecycle)</h2>
+        {/* Banner */}
+        <div className="bg-amber-50 border border-amber-200 rounded-md px-4 py-2 text-center dark:bg-amber-900/20 dark:border-amber-800/40">
+          <h2 className="text-xs font-bold text-amber-900 dark:text-amber-300">Budget Flow (Form View & Lifecycle)</h2>
           <p className="text-xs text-amber-800/80 dark:text-amber-400/80">Menu & Stage Mapping: Draft $\rightarrow$ Confirm $\rightarrow$ Revise $\rightarrow$ Cancelled. Achieved amount computed dynamically.</p>
         </div>
 
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm dark:shadow-xl">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-md">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/dashboard')}
-              className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition"
+              className="p-2 rounded bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4" />
             </button>
             <div>
-              <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">Analytical Budget Lifecycle</h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Planned vs Achieved tracking with Draft, Confirmed, Revised, and Cancelled stage flow</p>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">Analytical Budget Lifecycle</h1>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Planned vs Achieved tracking with Draft, Confirmed, Revised, and Cancelled stage flow</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => navigate('/reports/budget')}
-              className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold flex items-center gap-1.5 transition"
+              className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 text-xs font-semibold flex items-center gap-1.5 transition"
             >
-              <PieIcon className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+              <PieIcon className="w-4 h-4 text-primary dark:text-primary-dark" />
               <span>Budget Report</span>
             </button>
 
             <button
               onClick={() => setShowModal(true)}
-              className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md shadow-indigo-600/20 transition"
+              className="flex items-center gap-1.5 bg-primary hover:bg-primary-hover dark:bg-primary-dark text-white text-xs font-semibold px-3 py-2 rounded transition"
             >
               <Plus className="w-4 h-4" />
               <span>New Fresh Budget</span>
@@ -177,71 +177,71 @@ export default function BudgetList() {
         </div>
 
         {/* Budgets Cards / Table */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           {loading ? (
-            <div className="text-center py-16 text-slate-500 dark:text-slate-400">Loading budgets...</div>
+            <div className="text-center py-12 text-xs text-gray-500 dark:text-gray-400">Loading budgets...</div>
           ) : budgets.length === 0 ? (
-            <div className="text-center py-16 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-500 dark:text-slate-400">
+            <div className="text-center py-12 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md text-xs text-gray-500 dark:text-gray-400">
               No budgets created yet. Click "New Fresh Budget" to create one.
             </div>
           ) : (
             budgets.map((b) => (
               <div
                 key={b.id}
-                className={`bg-white dark:bg-slate-900 border rounded-2xl p-6 shadow-sm dark:shadow-xl space-y-6 transition ${
+                className={`bg-white dark:bg-gray-900 border rounded-md p-4 space-y-4 ${
                   b.status === 'REVISED'
-                    ? 'border-slate-200 dark:border-slate-800 opacity-70'
+                    ? 'border-gray-200 dark:border-gray-800 opacity-70'
                     : b.status === 'CANCELLED'
-                    ? 'border-red-200 dark:border-red-900/40 opacity-60'
-                    : 'border-slate-200 dark:border-slate-800 hover:border-indigo-500'
+                    ? 'border-rose-200 dark:border-rose-900/40 opacity-60'
+                    : 'border-gray-200 dark:border-gray-800'
                 }`}
               >
                 {/* Card Top Info */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3 border-b border-gray-200 dark:border-gray-800">
                   <div className="space-y-1">
                     <div className="flex items-center gap-3">
-                      <h2 className="text-xl font-bold text-slate-900 dark:text-white">{b.name}</h2>
+                      <h2 className="text-base font-bold text-gray-900 dark:text-white">{b.name}</h2>
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider ${
+                        className={`px-2 py-0.5 rounded text-[11px] font-semibold uppercase ${
                           b.status === 'DRAFT'
-                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30'
+                            ? 'bg-amber-50 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
                             : b.status === 'CONFIRMED'
-                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30'
+                            ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
                             : b.status === 'REVISED'
-                            ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/10 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/30'
-                            : 'bg-red-100 text-red-800 dark:bg-red-500/10 dark:text-red-400 border border-red-200 dark:border-red-500/30'
+                            ? 'bg-primary-light text-primary dark:bg-primary-dark/20 dark:text-primary-dark border border-primary/20 dark:border-primary-dark/30'
+                            : 'bg-rose-50 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400 border border-rose-200 dark:border-rose-800'
                         }`}
                       >
                         {b.status}
                       </span>
                       {b.revisedFrom && (
-                        <span className="text-xs text-slate-500 dark:text-slate-400 italic">
+                        <span className="text-xs text-gray-500 dark:text-gray-400 italic">
                           (Revision of: #{b.revisedFrom.id} {b.revisedFrom.name})
                         </span>
                       )}
                     </div>
-                    <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+                    <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                       <div className="flex items-center gap-1.5">
-                        <Calendar className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                        <Calendar className="w-3.5 h-3.5 text-primary dark:text-primary-dark" />
                         <span>
                           {new Date(b.periodStart).toLocaleDateString()} to {new Date(b.periodEnd).toLocaleDateString()}
                         </span>
                       </div>
                       {b.responsiblePerson && (
                         <div className="flex items-center gap-1.5">
-                          <User className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+                          <User className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
                           <span>Resp: {b.responsiblePerson}</span>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* Stage Flow Action Buttons (Matching Image 8 Wireframe) */}
+                  {/* Stage Flow Action Buttons */}
                   <div className="flex items-center gap-2">
                     {b.status === 'DRAFT' && (
                       <button
                         onClick={() => handleConfirm(b.id)}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm"
+                        className="flex items-center gap-1 px-3 py-1.5 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold"
                       >
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         <span>Confirm</span>
@@ -255,7 +255,7 @@ export default function BudgetList() {
                           setRevisedAmount(b.committedAmount);
                           setShowReviseModal(true);
                         }}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-sm"
+                        className="flex items-center gap-1 px-3 py-1.5 rounded bg-primary hover:bg-primary-hover dark:bg-primary-dark text-white text-xs font-semibold"
                       >
                         <RefreshCw className="w-3.5 h-3.5" />
                         <span>Revise</span>
@@ -265,7 +265,7 @@ export default function BudgetList() {
                     {b.status !== 'CANCELLED' && b.status !== 'REVISED' && (
                       <button
                         onClick={() => handleCancel(b.id)}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-red-600 dark:hover:bg-red-600 text-slate-700 dark:text-slate-300 hover:text-white text-xs font-semibold transition"
+                        className="flex items-center gap-1 px-3 py-1.5 rounded bg-gray-100 dark:bg-gray-800 hover:bg-rose-600 dark:hover:bg-rose-600 text-gray-700 dark:text-gray-300 hover:text-white text-xs font-medium"
                       >
                         <XCircle className="w-3.5 h-3.5" />
                         <span>Cancel</span>
@@ -274,43 +274,43 @@ export default function BudgetList() {
                   </div>
                 </div>
 
-                {/* Analytic Line Calculation Table (Image 8 & 9) */}
+                {/* Table */}
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
-                    <thead className="bg-slate-100 dark:bg-slate-800/60 uppercase text-slate-600 dark:text-slate-400 font-semibold">
+                  <table className="w-full text-left text-xs text-gray-700 dark:text-gray-300">
+                    <thead className="bg-gray-50 dark:bg-gray-800/60 uppercase text-[11px] text-gray-600 dark:text-gray-400 font-semibold border-b border-gray-200 dark:border-gray-800">
                       <tr>
-                        <th className="px-4 py-2.5">Analytic Account</th>
-                        <th className="px-4 py-2.5">Type</th>
-                        <th className="px-4 py-2.5 text-right">Committed Amount</th>
-                        <th className="px-4 py-2.5 text-right">Achieved Amount</th>
-                        <th className="px-4 py-2.5 text-right">Achieved %</th>
-                        <th className="px-4 py-2.5 text-right">Amount to Achieve</th>
-                        <th className="px-4 py-2.5 text-center">Drill-Down</th>
+                        <th className="px-3 py-2">Analytic Account</th>
+                        <th className="px-3 py-2">Type</th>
+                        <th className="px-3 py-2 text-right">Committed Amount</th>
+                        <th className="px-3 py-2 text-right">Achieved Amount</th>
+                        <th className="px-3 py-2 text-right">Achieved %</th>
+                        <th className="px-3 py-2 text-right">Amount to Achieve</th>
+                        <th className="px-3 py-2 text-center">Drill-Down</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr className="bg-slate-50 dark:bg-slate-800/30">
-                        <td className="px-4 py-3 font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                          <PieIcon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                      <tr className="bg-white dark:bg-gray-900">
+                        <td className="px-3 py-2 font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                          <PieIcon className="w-4 h-4 text-primary dark:text-primary-dark" />
                           <span>{b.analytic?.name}</span>
                         </td>
-                        <td className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-300">{b.analytic?.type}</td>
-                        <td className="px-4 py-3 text-right font-bold text-slate-900 dark:text-white font-mono">
+                        <td className="px-3 py-2 font-medium text-gray-700 dark:text-gray-300">{b.analytic?.type}</td>
+                        <td className="px-3 py-2 text-right font-bold text-gray-900 dark:text-white font-mono">
                           ₹{Number(b.committedAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                         </td>
-                        <td className="px-4 py-3 text-right font-extrabold text-teal-600 dark:text-teal-400 font-mono">
+                        <td className="px-3 py-2 text-right font-bold text-emerald-600 dark:text-emerald-400 font-mono">
                           ₹{Number(b.achievedAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                         </td>
-                        <td className="px-4 py-3 text-right font-bold text-indigo-600 dark:text-indigo-400 font-mono">
+                        <td className="px-3 py-2 text-right font-bold text-primary dark:text-primary-dark font-mono">
                           {b.achievedPercent}%
                         </td>
-                        <td className="px-4 py-3 text-right font-semibold text-amber-600 dark:text-amber-400 font-mono">
+                        <td className="px-3 py-2 text-right font-semibold text-amber-600 dark:text-amber-400 font-mono">
                           ₹{Number(b.remainingAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                         </td>
-                        <td className="px-4 py-3 text-center">
+                        <td className="px-3 py-2 text-center">
                           <button
                             onClick={() => handleViewTransactions(b)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-indigo-100 dark:bg-indigo-600/30 hover:bg-indigo-600 text-indigo-700 dark:text-indigo-300 hover:text-white text-[11px] font-bold transition"
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary-light text-primary dark:bg-primary-dark/20 dark:text-primary-dark hover:bg-primary hover:text-white dark:hover:bg-primary-dark text-[11px] font-semibold transition"
                             title="View Invoices/Bills contributing to Achieved Amount"
                           >
                             <Eye className="w-3.5 h-3.5" />
@@ -324,13 +324,13 @@ export default function BudgetList() {
 
                 {/* Progress Bar */}
                 <div className="space-y-1">
-                  <div className="flex justify-between text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
+                  <div className="flex justify-between text-[11px] text-gray-500 dark:text-gray-400 font-semibold">
                     <span>Progress to Target</span>
                     <span>{b.achievedPercent}%</span>
                   </div>
-                  <div className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-teal-500 to-indigo-500 rounded-full transition-all duration-500"
+                      className="h-full bg-primary dark:bg-primary-dark rounded-full"
                       style={{ width: `${Math.min(100, b.achievedPercent)}%` }}
                     />
                   </div>
@@ -343,12 +343,12 @@ export default function BudgetList() {
 
         {/* Create Modal */}
         {showModal && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-6 animate-in fade-in zoom-in-95">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Create New Fresh Budget</h2>
+          <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md p-6 max-w-lg w-full space-y-4">
+              <h2 className="text-base font-bold text-gray-900 dark:text-white">Create New Fresh Budget</h2>
 
               {error && (
-                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-red-600 dark:text-red-400 text-xs flex items-center gap-2">
+                <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-md p-3 text-rose-700 dark:text-rose-400 text-xs flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   <span>{error}</span>
                 </div>
@@ -356,7 +356,7 @@ export default function BudgetList() {
 
               <form onSubmit={handleCreate} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                     Budget Name *
                   </label>
                   <input
@@ -365,13 +365,13 @@ export default function BudgetList() {
                     placeholder="e.g., January 2026 / Project A"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-3 py-1.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                       Start Date
                     </label>
                     <input
@@ -379,11 +379,11 @@ export default function BudgetList() {
                       required
                       value={periodStart}
                       onChange={(e) => setPeriodStart(e.target.value)}
-                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 transition"
+                      className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-3 py-1.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                       End Date
                     </label>
                     <input
@@ -391,19 +391,19 @@ export default function BudgetList() {
                       required
                       value={periodEnd}
                       onChange={(e) => setPeriodEnd(e.target.value)}
-                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 transition"
+                      className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-3 py-1.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                     Responsible Person
                   </label>
                   <select
                     value={responsiblePerson}
                     onChange={(e) => setResponsiblePerson(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-3 py-1.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                   >
                     <option value="">-- Select Responsible Person --</option>
                     {contacts.map((c) => (
@@ -415,13 +415,13 @@ export default function BudgetList() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                     Analytic Account *
                   </label>
                   <select
                     value={analyticId}
                     onChange={(e) => setAnalyticId(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-3 py-1.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                   >
                     {analytics.map((an) => (
                       <option key={an.id} value={an.id}>
@@ -432,7 +432,7 @@ export default function BudgetList() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                     Committed Target Amount (Rs.) *
                   </label>
                   <input
@@ -442,21 +442,21 @@ export default function BudgetList() {
                     placeholder="200000.00"
                     value={committedAmount}
                     onChange={(e) => setCommittedAmount(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-3 py-1.5 text-xs text-gray-900 dark:text-white font-bold focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                   />
                 </div>
 
-                <div className="flex items-center gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+                <div className="flex items-center gap-3 pt-3 border-t border-gray-200 dark:border-gray-800">
                   <button
                     type="submit"
-                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl shadow-md transition"
+                    className="flex-1 bg-primary hover:bg-primary-hover dark:bg-primary-dark text-white font-semibold text-xs py-2 rounded transition"
                   >
                     Create Fresh Budget
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowModal(false)}
-                    className="px-4 py-2.5 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl font-semibold transition"
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded text-xs font-medium"
                   >
                     Cancel
                   </button>
@@ -468,16 +468,16 @@ export default function BudgetList() {
 
         {/* Revise Modal */}
         {showReviseModal && selectedBudget && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6 animate-in fade-in zoom-in-95">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Revise Budget: {selectedBudget.name}</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+          <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md p-6 max-w-md w-full space-y-4">
+              <h2 className="text-base font-bold text-gray-900 dark:text-white">Revise Budget: {selectedBudget.name}</h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Revising will mark original budget as REVISED and create a new confirmed budget entry named '{selectedBudget.name.endsWith('Revised') ? selectedBudget.name : `${selectedBudget.name} Revised`}'.
               </p>
 
               <form onSubmit={handleReviseSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                     New Committed Amount (Rs.) *
                   </label>
                   <input
@@ -486,21 +486,21 @@ export default function BudgetList() {
                     required
                     value={revisedAmount}
                     onChange={(e) => setRevisedAmount(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white font-bold focus:ring-2 focus:ring-indigo-500 transition"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-3 py-1.5 text-xs text-gray-900 dark:text-white font-bold focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                   />
                 </div>
 
-                <div className="flex items-center gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+                <div className="flex items-center gap-3 pt-3 border-t border-gray-200 dark:border-gray-800">
                   <button
                     type="submit"
-                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl shadow-md transition"
+                    className="flex-1 bg-primary hover:bg-primary-hover dark:bg-primary-dark text-white font-semibold text-xs py-2 rounded transition"
                   >
                     Confirm Revision
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowReviseModal(false)}
-                    className="px-4 py-2.5 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl font-semibold transition"
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded text-xs font-medium"
                   >
                     Cancel
                   </button>
@@ -512,54 +512,54 @@ export default function BudgetList() {
 
         {/* Drill-Down Transactions Modal */}
         {showTransModal && selectedBudget && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl space-y-6 animate-in fade-in zoom-in-95">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+          <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md p-6 max-w-2xl w-full space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-800">
                 <div>
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">Achieved Transactions Drill-Down</h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                  <h2 className="text-base font-bold text-gray-900 dark:text-white">Achieved Transactions Drill-Down</h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     Invoices & Bills linked to '{selectedBudget.analytic?.name}' during budget period
                   </p>
                 </div>
                 <button
                   onClick={() => setShowTransModal(false)}
-                  className="px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold"
+                  className="px-3 py-1.5 rounded border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 text-xs font-medium"
                 >
                   Close
                 </button>
               </div>
 
               {budgetTransactions.length === 0 ? (
-                <div className="text-center py-10 text-slate-500 dark:text-slate-400 text-xs">
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400 text-xs">
                   No posted invoices or bills linked to this analytic account during the budget period.
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
-                    <thead className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 uppercase font-semibold">
+                <div className="overflow-x-auto border border-gray-200 dark:border-gray-800 rounded-md">
+                  <table className="w-full text-left text-xs text-gray-700 dark:text-gray-300">
+                    <thead className="bg-gray-50 dark:bg-gray-800/60 text-gray-600 dark:text-gray-400 uppercase font-semibold text-[11px]">
                       <tr>
-                        <th className="px-4 py-2.5">Document Type</th>
-                        <th className="px-4 py-2.5">Reference</th>
-                        <th className="px-4 py-2.5">Partner</th>
-                        <th className="px-4 py-2.5">Date</th>
-                        <th className="px-4 py-2.5 text-right">Total Amount</th>
-                        <th className="px-4 py-2.5 text-center">Status</th>
+                        <th className="px-3 py-2">Document Type</th>
+                        <th className="px-3 py-2">Reference</th>
+                        <th className="px-3 py-2">Partner</th>
+                        <th className="px-3 py-2">Date</th>
+                        <th className="px-3 py-2 text-right">Total Amount</th>
+                        <th className="px-3 py-2 text-center">Status</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                    <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                       {budgetTransactions.map((tx, idx) => (
-                        <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                          <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">{tx.type}</td>
-                          <td className="px-4 py-3 font-mono text-indigo-600 dark:text-indigo-300">{tx.reference}</td>
-                          <td className="px-4 py-3">{tx.partner}</td>
-                          <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
+                        <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-800/40">
+                          <td className="px-3 py-2 font-semibold text-gray-900 dark:text-white">{tx.type}</td>
+                          <td className="px-3 py-2 font-mono text-primary dark:text-primary-dark">{tx.reference}</td>
+                          <td className="px-3 py-2">{tx.partner}</td>
+                          <td className="px-3 py-2 text-gray-500 dark:text-gray-400">
                             {new Date(tx.date).toLocaleDateString()}
                           </td>
-                          <td className="px-4 py-3 text-right font-bold text-teal-600 dark:text-teal-400 font-mono">
+                          <td className="px-3 py-2 text-right font-bold text-emerald-600 dark:text-emerald-400 font-mono">
                             ₹{tx.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                           </td>
-                          <td className="px-4 py-3 text-center">
-                            <span className="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
+                          <td className="px-3 py-2 text-center">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-semibold uppercase bg-emerald-50 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
                               {tx.status}
                             </span>
                           </td>

@@ -66,38 +66,38 @@ export default function PurchaseOrderList() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 pb-16">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 pb-16">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-4">
         
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-md">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/dashboard')}
-              className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
+              className="p-2 rounded bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4" />
             </button>
             <div>
-              <h1 className="text-2xl font-extrabold text-white">Purchase Orders (PO)</h1>
-              <p className="text-xs text-slate-400">Purchase flow: Create PO → Goods Receipt / Convert to Vendor Bill → Payment</p>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">Purchase Orders (PO)</h1>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Purchase flow: Create PO → Goods Receipt / Convert to Vendor Bill → Payment</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => navigate('/purchases/bills')}
-              className="px-4 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 text-xs font-semibold flex items-center gap-1.5 transition"
+              className="px-3 py-2 rounded border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 text-xs font-semibold flex items-center gap-1.5 transition"
             >
-              <FileText className="w-4 h-4 text-violet-400" />
+              <FileText className="w-4 h-4 text-primary dark:text-primary-dark" />
               <span>Vendor Bills</span>
             </button>
 
             <button
               onClick={() => navigate('/purchases/new')}
-              className="flex items-center gap-1.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg shadow-violet-600/30 transition"
+              className="flex items-center gap-1.5 bg-primary hover:bg-primary-hover dark:bg-primary-dark text-white text-xs font-semibold px-3 py-2 rounded transition"
             >
               <Plus className="w-4 h-4" />
               <span>New Purchase Order</span>
@@ -106,64 +106,64 @@ export default function PurchaseOrderList() {
         </div>
 
         {/* Table */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md overflow-hidden">
           {loading ? (
-            <div className="text-center py-16 text-slate-400">Loading purchase orders...</div>
+            <div className="text-center py-12 text-xs text-gray-500 dark:text-gray-400">Loading purchase orders...</div>
           ) : orders.length === 0 ? (
-            <div className="text-center py-16 text-slate-400">No purchase orders found.</div>
+            <div className="text-center py-12 text-xs text-gray-500 dark:text-gray-400">No purchase orders found.</div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-slate-300">
-                <thead className="bg-slate-800/80 text-xs uppercase text-slate-400 font-semibold tracking-wider border-b border-slate-800">
+              <table className="w-full text-left text-xs text-gray-700 dark:text-gray-300">
+                <thead className="bg-gray-50 dark:bg-gray-800/60 uppercase text-[11px] text-gray-600 dark:text-gray-400 font-semibold border-b border-gray-200 dark:border-gray-800">
                   <tr>
-                    <th className="px-6 py-4">PO Number</th>
-                    <th className="px-6 py-4">Vendor</th>
-                    <th className="px-6 py-4">Date</th>
-                    <th className="px-6 py-4">Order Items</th>
-                    <th className="px-6 py-4 text-right">Total Amount</th>
-                    <th className="px-6 py-4 text-center">Status</th>
-                    <th className="px-6 py-4 text-right">Actions</th>
+                    <th className="px-4 py-3">PO Number</th>
+                    <th className="px-4 py-3">Vendor</th>
+                    <th className="px-4 py-3">Date</th>
+                    <th className="px-4 py-3">Order Items</th>
+                    <th className="px-4 py-3 text-right">Total Amount</th>
+                    <th className="px-4 py-3 text-center">Status</th>
+                    <th className="px-4 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800">
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                   {orders.map((o) => {
                     const totalAmt = o.lines?.reduce((s, l) => s + Number(l.unitPrice) * l.quantity, 0) || 0;
 
                     return (
-                      <tr key={o.id} className="hover:bg-slate-800/50 transition">
-                        <td className="px-6 py-4 font-mono text-xs text-violet-400 font-bold">PO/# {o.id}</td>
-                        <td className="px-6 py-4 font-bold text-white flex items-center gap-2">
-                          <ShoppingCart className="w-4 h-4 text-violet-400" />
+                      <tr key={o.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/40">
+                        <td className="px-4 py-3 font-mono font-bold text-primary dark:text-primary-dark">PO/# {o.id}</td>
+                        <td className="px-4 py-3 font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                          <ShoppingCart className="w-4 h-4 text-primary dark:text-primary-dark" />
                           <span>{o.contact?.name}</span>
                         </td>
-                        <td className="px-6 py-4 text-xs text-slate-400">
+                        <td className="px-4 py-3 text-gray-500 dark:text-gray-400 font-mono">
                           {new Date(o.date).toLocaleDateString()}
                         </td>
-                        <td className="px-6 py-4 text-xs text-slate-300">
+                        <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
                           {o.lines?.map((l) => `${l.product?.name} (x${l.quantity})`).join(', ')}
                         </td>
-                        <td className="px-6 py-4 text-right font-extrabold text-violet-400">
+                        <td className="px-4 py-3 text-right font-bold text-primary dark:text-primary-dark font-mono">
                           ₹{totalAmt.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                         </td>
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-4 py-3 text-center">
                           <span
-                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
+                            className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${
                               o.status === 'DRAFT'
-                                ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
+                                ? 'bg-amber-50 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800'
                                 : o.status === 'CONFIRMED'
-                                ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/30'
-                                : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                                ? 'bg-primary-light text-primary dark:bg-primary-dark/20 dark:text-primary-dark border border-primary/20 dark:border-primary-dark/30'
+                                : 'bg-emerald-50 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
                             }`}
                           >
                             {o.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-right">
+                        <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-2">
                             {o.status === 'DRAFT' && (
                               <button
                                 onClick={() => handleConfirm(o.id)}
-                                className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow"
+                                className="px-3 py-1.5 rounded bg-primary hover:bg-primary-hover dark:bg-primary-dark text-white text-xs font-semibold"
                               >
                                 Confirm
                               </button>
@@ -172,7 +172,7 @@ export default function PurchaseOrderList() {
                             {o.status === 'CONFIRMED' && (
                               <button
                                 onClick={() => handleConvertToBill(o.id)}
-                                className="px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold transition shadow"
+                                className="px-3 py-1.5 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold"
                               >
                                 Convert to Bill
                               </button>
@@ -180,7 +180,7 @@ export default function PurchaseOrderList() {
 
                             {o.status === 'INVOICED' && o.bill && (
                               o.bill.status === 'PAID' ? (
-                                <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
+                                <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 px-2 py-1 rounded">
                                   PAID (BILL/{o.bill.id})
                                 </span>
                               ) : (
@@ -190,7 +190,7 @@ export default function PurchaseOrderList() {
                                     setPayAmount(o.bill.totalAmount);
                                     setShowPayModal(true);
                                   }}
-                                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold transition shadow"
+                                  className="flex items-center gap-1 px-3 py-1.5 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold"
                                 >
                                   <CreditCard className="w-3.5 h-3.5" />
                                   <span>Pay Bill</span>
@@ -210,16 +210,16 @@ export default function PurchaseOrderList() {
 
         {/* Payment Modal */}
         {showPayModal && selectedBill && (
-          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-6 animate-in fade-in zoom-in-95">
-              <h2 className="text-xl font-bold text-white">Pay Vendor Bill</h2>
-              <p className="text-xs text-slate-400">
+          <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md p-6 max-w-md w-full space-y-4">
+              <h2 className="text-base font-bold text-gray-900 dark:text-white">Pay Vendor Bill</h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Register payment for BILL/{selectedBill.id} (Amount: ₹{Number(selectedBill.totalAmount).toLocaleString('en-IN')})
               </p>
 
               <form onSubmit={handlePaySubmit} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                     Payment Amount (Rs.) *
                   </label>
                   <input
@@ -228,35 +228,35 @@ export default function PurchaseOrderList() {
                     required
                     value={payAmount}
                     onChange={(e) => setPayAmount(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white font-bold focus:ring-2 focus:ring-indigo-500 transition"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-3 py-2 text-xs text-gray-900 dark:text-white font-bold focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
                     Payment Method *
                   </label>
                   <select
                     value={payMethod}
                     onChange={(e) => setPayMethod(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:ring-2 focus:ring-indigo-500 transition"
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-3 py-2 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                   >
                     <option value="BANK">Bank Transfer (Bank Journal)</option>
                     <option value="CASH">Cash (Cash Journal)</option>
                   </select>
                 </div>
 
-                <div className="flex items-center gap-3 pt-4 border-t border-slate-800">
+                <div className="flex items-center gap-3 pt-3 border-t border-gray-200 dark:border-gray-800">
                   <button
                     type="submit"
-                    className="flex-1 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold py-2.5 rounded-xl shadow-lg transition"
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs py-2 rounded transition"
                   >
                     Pay Vendor
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowPayModal(false)}
-                    className="px-4 py-2.5 border border-slate-700 text-slate-300 hover:bg-slate-800 rounded-xl font-semibold transition"
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded text-xs font-medium"
                   >
                     Cancel
                   </button>
