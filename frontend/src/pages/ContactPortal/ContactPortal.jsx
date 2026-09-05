@@ -24,23 +24,22 @@ export default function ContactPortal() {
 
   const fetchData = async () => {
     if (!user) return;
+    // If there is no contactId linked, the server will return 403 — we don't fall back to all records.
+    if (!user.contactId) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
-      if (user.contactId) {
-        const [iRes, bRes] = await Promise.all([
-          salesApi.listInvoices({ contactId: user.contactId }),
-          purchaseApi.listBills({ contactId: user.contactId }),
-        ]);
-        setInvoices(iRes.data || []);
-        setBills(bRes.data || []);
-      } else {
-        const [iRes, bRes] = await Promise.all([
-          salesApi.listInvoices(),
-          purchaseApi.listBills(),
-        ]);
-        setInvoices(iRes.data || []);
-        setBills(bRes.data || []);
-      }
+      // Always send contactId from the authenticated user object.
+      // The server ignores this param for CONTACT_USER and enforces its own filter,
+      // but sending it keeps Admin/Accountant portal previews correct too.
+      const [iRes, bRes] = await Promise.all([
+        salesApi.listInvoices({ contactId: user.contactId }),
+        purchaseApi.listBills({ contactId: user.contactId }),
+      ]);
+      setInvoices(iRes.data || []);
+      setBills(bRes.data || []);
     } catch (err) {
       console.error('Error fetching portal data:', err);
     } finally {
@@ -94,7 +93,16 @@ export default function ContactPortal() {
           </div>
         </div>
 
+        {/* Guard: no contactId linked */}
+        {!user?.contactId && (
+          <div className="bg-rose-900/30 border border-rose-500/30 rounded-2xl p-6 text-center text-rose-300 text-sm">
+            <p className="font-bold text-rose-200 text-base mb-1">Portal Not Configured</p>
+            <p>Your portal account is not linked to any contact record. Please contact an administrator to set up your access.</p>
+          </div>
+        )}
+
         {/* Customer Invoices Section */}
+        {user?.contactId && (
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
             <FileText className="w-5 h-5 text-indigo-400" />
@@ -162,9 +170,10 @@ export default function ContactPortal() {
             </div>
           )}
         </div>
+        )}
 
         {/* Vendor Bills Section (if vendor) */}
-        {bills.length > 0 && (
+        {user?.contactId && bills.length > 0 && (
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
             <h2 className="text-lg font-bold text-white flex items-center gap-2">
               <FileText className="w-5 h-5 text-violet-400" />

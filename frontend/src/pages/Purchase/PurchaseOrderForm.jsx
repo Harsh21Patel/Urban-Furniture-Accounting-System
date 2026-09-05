@@ -11,7 +11,7 @@ export default function PurchaseOrderForm() {
 
   const [contactId, setContactId] = useState('');
   const [lines, setLines] = useState([
-    { productId: '', quantity: 1, unitPrice: 0, analyticId: '' },
+    { productId: '', quantity: 1, unitPrice: 0, taxPercent: 18, analyticId: '' },
   ]);
 
   const [error, setError] = useState('');
@@ -33,6 +33,7 @@ export default function PurchaseOrderForm() {
               productId: pRes.data[0].id,
               quantity: 2,
               unitPrice: Number(pRes.data[0].cost),
+              taxPercent: 18,
               analyticId: anRes.data?.[0]?.id || '',
             },
           ]);
@@ -64,6 +65,7 @@ export default function PurchaseOrderForm() {
         productId: products[0]?.id || '',
         quantity: 1,
         unitPrice: Number(products[0]?.cost || 0),
+        taxPercent: 18,
         analyticId: analytics[0]?.id || '',
       },
     ]);
@@ -74,10 +76,16 @@ export default function PurchaseOrderForm() {
     setLines(lines.filter((_, i) => i !== index));
   };
 
-  const grandTotal = lines.reduce(
-    (s, l) => s + (parseFloat(l.quantity) || 0) * (parseFloat(l.unitPrice) || 0),
+  const subtotal = lines.reduce((s, l) => s + (parseFloat(l.quantity) || 0) * (parseFloat(l.unitPrice) || 0), 0);
+  const taxTotal = lines.reduce(
+    (s, l) =>
+      s +
+      (parseFloat(l.quantity) || 0) *
+        (parseFloat(l.unitPrice) || 0) *
+        ((parseFloat(l.taxPercent) || 0) / 100),
     0
   );
+  const grandTotal = subtotal + taxTotal;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -94,6 +102,7 @@ export default function PurchaseOrderForm() {
           productId: Number(l.productId),
           quantity: Number(l.quantity),
           unitPrice: parseFloat(l.unitPrice),
+          taxPercent: parseFloat(l.taxPercent || 0),
           analyticId: l.analyticId ? Number(l.analyticId) : null,
         })),
       });
@@ -176,16 +185,20 @@ export default function PurchaseOrderForm() {
                   <thead className="bg-slate-800 text-slate-400 uppercase font-semibold">
                     <tr>
                       <th className="px-4 py-3">Product</th>
-                      <th className="px-4 py-3 w-28">Quantity</th>
-                      <th className="px-4 py-3 w-36">Unit Cost (Rs.)</th>
+                      <th className="px-4 py-3 w-24">Quantity</th>
+                      <th className="px-4 py-3 w-32">Unit Cost (Rs.)</th>
+                      <th className="px-4 py-3 w-20">Tax %</th>
                       <th className="px-4 py-3">Analytic Account</th>
-                      <th className="px-4 py-3 text-right w-36">Line Total</th>
+                      <th className="px-4 py-3 text-right w-32">Line Total</th>
                       <th className="px-3 py-3 w-10"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800">
                     {lines.map((l, idx) => {
-                      const lineTotal = (parseFloat(l.quantity) || 0) * (parseFloat(l.unitPrice) || 0);
+                      const lineTotal =
+                        (parseFloat(l.quantity) || 0) *
+                        (parseFloat(l.unitPrice) || 0) *
+                        (1 + (parseFloat(l.taxPercent) || 0) / 100);
 
                       return (
                         <tr key={idx} className="bg-slate-900">
@@ -227,6 +240,17 @@ export default function PurchaseOrderForm() {
                           </td>
 
                           <td className="p-3">
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={l.taxPercent}
+                              onChange={(e) => handleLineChange(idx, 'taxPercent', e.target.value)}
+                              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white text-center focus:ring-1 focus:ring-indigo-500"
+                            />
+                          </td>
+
+                          <td className="p-3">
                             <select
                               value={l.analyticId}
                               onChange={(e) => handleLineChange(idx, 'analyticId', e.target.value)}
@@ -264,8 +288,16 @@ export default function PurchaseOrderForm() {
 
             {/* Calculations Summary Box */}
             <div className="flex justify-end">
-              <div className="w-full sm:w-72 bg-slate-800/80 border border-slate-700/80 rounded-xl p-4 text-xs space-y-2">
-                <div className="flex justify-between text-sm font-extrabold text-white">
+              <div className="w-full sm:w-72 bg-slate-800/80 border border-slate-700/80 rounded-xl p-4 space-y-2 text-xs">
+                <div className="flex justify-between text-slate-300">
+                  <span>Subtotal:</span>
+                  <span className="font-mono">₹{subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-slate-400">
+                  <span>Tax Amount:</span>
+                  <span className="font-mono">₹{taxTotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm font-extrabold text-white pt-2 border-t border-slate-700">
                   <span>Grand Total (Billable):</span>
                   <span className="text-violet-400 font-mono">₹{grandTotal.toFixed(2)}</span>
                 </div>

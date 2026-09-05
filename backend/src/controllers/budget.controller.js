@@ -1,4 +1,5 @@
 import prisma from '../config/db.js';
+import { getDateRangeFilter } from '../utils/dateUtils.js';
 
 export async function computeBudgetAchieved(budget) {
   const { analyticId, periodStart, periodEnd } = budget;
@@ -9,30 +10,38 @@ export async function computeBudgetAchieved(budget) {
 
   if (!analytic) return 0;
 
+  const dateFilter = getDateRangeFilter(periodStart, periodEnd);
+
+  const lines = await prisma.journalEntryLine.findMany({
+    where: {
+      analyticId: Number(analyticId),
+      journalEntry: {
+        status: 'POSTED',
+        ...(dateFilter ? { date: dateFilter } : {}),
+      },
+    },
+    include: {
+      account: true,
+    },
+  });
+
   if (analytic.type === 'INCOME') {
-    // Sum Sales Invoices for sales orders matching analyticId and created between periodStart and periodEnd
-    const invoices = await prisma.invoice.findMany({
-      where: {
-        createdAt: { gte: new Date(periodStart), lte: new Date(periodEnd) },
-        salesOrder: {
-          lines: { some: { analyticId: Number(analyticId) } },
-        },
-      },
-    });
-    return invoices.reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
+    return lines.reduce((sum, l) => {
+      if (l.account.type === 'INCOME') {
+        return sum + (Number(l.credit) - Number(l.debit));
+      }
+      return sum + Number(l.credit);
+    }, 0);
   } else {
-    // Sum Vendor Bills for purchase orders matching analyticId and created between periodStart and periodEnd
-    const bills = await prisma.vendorBill.findMany({
-      where: {
-        createdAt: { gte: new Date(periodStart), lte: new Date(periodEnd) },
-        purchaseOrder: {
-          lines: { some: { analyticId: Number(analyticId) } },
-        },
-      },
-    });
-    return bills.reduce((sum, bill) => sum + Number(bill.totalAmount), 0);
+    return lines.reduce((sum, l) => {
+      if (l.account.type === 'EXPENSE') {
+        return sum + (Number(l.debit) - Number(l.credit));
+      }
+      return sum + Number(l.debit);
+    }, 0);
   }
 }
+
 
 export async function listBudgets(req, res, next) {
   try {
@@ -191,46 +200,50 @@ export async function getBudgetTransactions(req, res, next) {
 
     if (!budget) return res.status(404).json({ message: 'Budget not found' });
 
-    if (budget.analytic.type === 'INCOME') {
-      const invoices = await prisma.invoice.findMany({
-        where: {
-          createdAt: { gte: new Date(budget.periodStart), lte: new Date(budget.periodEnd) },
-          salesOrder: { lines: { some: { analyticId: budget.analyticId } } },
+    const dateFilter = getDateRangeFilter(budget.periodStart, budget.periodEnd);
+
+    const lines = await prisma.journalEntryLine.findMany({
+      where: {
+        analyticId: budget.analyticId,
+        journalEntry: {
+          status: 'POSTED',
+          ...(dateFilter ? { date: dateFilter } : {}),
         },
-        include: { salesOrder: { include: { contact: true } } },
-      });
-      res.json(
-        invoices.map((inv) => ({
-          type: 'Customer Invoice',
-          id: inv.id,
-          reference: `INV/${inv.id}`,
-          partner: inv.salesOrder.contact.name,
-          date: inv.createdAt,
-          totalAmount: Number(inv.totalAmount),
-          status: inv.status,
-        }))
-      );
-    } else {
-      const bills = await prisma.vendorBill.findMany({
-        where: {
-          createdAt: { gte: new Date(budget.periodStart), lte: new Date(budget.periodEnd) },
-          purchaseOrder: { lines: { some: { analyticId: budget.analyticId } } },
-        },
-        include: { purchaseOrder: { include: { contact: true } } },
-      });
-      res.json(
-        bills.map((b) => ({
-          type: 'Vendor Bill',
-          id: b.id,
-          reference: `BILL/${b.id}`,
-          partner: b.purchaseOrder.contact.name,
-          date: b.createdAt,
-          totalAmount: Number(b.totalAmount),
-          status: b.status,
-        }))
-      );
-    }
+      },
+      include: {
+        partner: true,
+        account: true,
+        journalEntry: { include: { journal: true } },
+      },
+      orderBy: { journalEntry: { date: 'desc' } },
+    });
+
+    const transactions = lines.map((l) => {
+      const isIncome = budget.analytic.type === 'INCOME';
+      const amount = isIncome
+        ? (l.account.type === 'INCOME' ? Number(l.credit) - Number(l.debit) : Number(l.credit))
+        : (l.account.type === 'EXPENSE' ? Number(l.debit) - Number(l.credit) : Number(l.debit));
+
+      let type = 'Journal Line';
+      if (l.journalEntry.journal.type === 'SALES') type = 'Customer Invoice';
+      else if (l.journalEntry.journal.type === 'PURCHASE') type = 'Vendor Bill';
+      else if (l.journalEntry.journal.type === 'BANK' || l.journalEntry.journal.type === 'CASH') type = 'Payment';
+
+      return {
+        type,
+        id: l.id,
+        reference: l.journalEntry.reference || `ENTRY/${l.journalEntry.id}`,
+        partner: l.partner ? l.partner.name : '-',
+        account: l.account.name,
+        date: l.journalEntry.date,
+        totalAmount: amount,
+        status: l.journalEntry.status,
+      };
+    });
+
+    res.json(transactions);
   } catch (err) {
     next(err);
   }
 }
+

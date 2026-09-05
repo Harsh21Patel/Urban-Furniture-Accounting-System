@@ -84,20 +84,29 @@ export async function createUser(req, res, next) {
 
     let parsedContactId = contactId ? Number(contactId) : null;
     
-    // If role is CONTACT_USER (User) and no contactId is provided, check if a contact exists with the email or create one
-    if (role === 'CONTACT_USER' && !parsedContactId) {
-      const existingContact = await prisma.contact.findUnique({ where: { email } });
-      if (existingContact) {
-        parsedContactId = existingContact.id;
-      } else {
-        const newContact = await prisma.contact.create({
-          data: {
-            name: name || loginId,
-            type: 'CUSTOMER',
-            email,
-          },
-        });
-        parsedContactId = newContact.id;
+    // If role is CONTACT_USER (User), ensure single portal user per contact
+    if (role === 'CONTACT_USER') {
+      if (!parsedContactId) {
+        const existingContact = await prisma.contact.findUnique({ where: { email } });
+        if (existingContact) {
+          parsedContactId = existingContact.id;
+        } else {
+          const newContact = await prisma.contact.create({
+            data: {
+              name: name || loginId,
+              type: 'CUSTOMER',
+              email,
+            },
+          });
+          parsedContactId = newContact.id;
+        }
+      }
+
+      const existingPortalUser = await prisma.user.findFirst({
+        where: { contactId: parsedContactId, role: 'CONTACT_USER' },
+      });
+      if (existingPortalUser) {
+        return res.status(409).json({ message: 'A Portal User (CONTACT_USER) already exists for this contact' });
       }
     }
 
@@ -121,6 +130,7 @@ export async function createUser(req, res, next) {
 export async function login(req, res, next) {
   try {
     const { loginId, password } = req.body;
+    console.log("Login:", loginId, password);
 
     const user = await prisma.user.findUnique({
       where: { loginId },

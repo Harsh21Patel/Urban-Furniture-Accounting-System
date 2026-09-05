@@ -1,5 +1,6 @@
 import prisma from '../config/db.js';
 import { postJournalEntry } from './journalEntry.controller.js';
+import { computeBudgetAchieved } from './budget.controller.js';
 
 // --- Sales Orders ---
 
@@ -37,12 +38,43 @@ export async function createSalesOrder(req, res, next) {
 
 export async function confirmSalesOrder(req, res, next) {
   try {
-    const order = await prisma.salesOrder.update({
-      where: { id: Number(req.params.id) },
+    const orderId = Number(req.params.id);
+    const order = await prisma.salesOrder.findUnique({
+      where: { id: orderId },
+      include: { lines: true },
+    });
+    if (!order) return res.status(404).json({ message: 'Sales order not found' });
+
+    // Budget-exceeded check
+    const orderDate = order.createdAt || new Date();
+    for (const line of order.lines) {
+      if (!line.analyticId) continue;
+      const lineTotal = Number(line.unitPrice) * line.quantity * (1 + Number(line.taxPercent) / 100);
+      const budgets = await prisma.budget.findMany({
+        where: {
+          analyticId: line.analyticId,
+          status: 'CONFIRMED',
+          periodStart: { lte: orderDate },
+          periodEnd: { gte: orderDate },
+        },
+      });
+      for (const budget of budgets) {
+        const achieved = await computeBudgetAchieved(budget);
+        const remaining = Math.max(0, Number(budget.committedAmount) - achieved);
+        if (lineTotal > remaining) {
+          return res.status(400).json({
+            message: `Exceeds Approved Budget: The entered amount is higher than the remaining budget amount for this budget line. Consider adjusting the value or revise the budget. (Remaining: ₹${remaining.toFixed(2)})`,
+          });
+        }
+      }
+    }
+
+    const confirmed = await prisma.salesOrder.update({
+      where: { id: orderId },
       data: { status: 'CONFIRMED' },
       include: { contact: true, lines: { include: { product: true } } },
     });
-    res.json(order);
+    res.json(confirmed);
   } catch (err) {
     next(err);
   }
@@ -50,7 +82,18 @@ export async function confirmSalesOrder(req, res, next) {
 
 export async function listSalesOrders(req, res, next) {
   try {
+    const where = {};
+    if (req.user.role === 'CONTACT_USER') {
+      if (!req.user.contactId) {
+        return res.status(403).json({ message: 'User account is not linked to a valid contact' });
+      }
+      where.contactId = req.user.contactId;
+    } else if (req.query.contactId) {
+      where.contactId = Number(req.query.contactId);
+    }
+
     const orders = await prisma.salesOrder.findMany({
+      where,
       include: {
         contact: true,
         lines: { include: { product: true, analytic: true } },
@@ -94,6 +137,13 @@ export async function generateInvoice(req, res, next) {
       include: { salesOrder: { include: { contact: true } } },
     });
 
+    // Populate invoiceNumber with INV/id
+    const updatedInvoice = await prisma.invoice.update({
+      where: { id: invoice.id },
+      data: { invoiceNumber: `INV/${invoice.id}` },
+      include: { salesOrder: { include: { contact: true } } },
+    });
+
     const debtorsAccount = await prisma.account.findFirst({ where: { name: 'Debtors' } });
     const salesIncomeAccount = await prisma.account.findFirst({ where: { name: 'Sale Income' } });
     const salesJournal = await prisma.journal.findFirst({ where: { type: 'SALES' } });
@@ -126,18 +176,23 @@ export async function generateInvoice(req, res, next) {
 
     await prisma.salesOrder.update({ where: { id: salesOrderId }, data: { status: 'INVOICED' } });
 
-    res.status(201).json(invoice);
+    res.status(201).json(updatedInvoice);
   } catch (err) {
     next(err);
   }
 }
 
+
 export async function listInvoices(req, res, next) {
   try {
-    const { contactId } = req.query;
     const where = {};
-    if (contactId) {
-      where.salesOrder = { contactId: Number(contactId) };
+    if (req.user.role === 'CONTACT_USER') {
+      if (!req.user.contactId) {
+        return res.status(403).json({ message: 'User account is not linked to a valid contact' });
+      }
+      where.salesOrder = { contactId: req.user.contactId };
+    } else if (req.query.contactId) {
+      where.salesOrder = { contactId: Number(req.query.contactId) };
     }
 
     const invoices = await prisma.invoice.findMany({
@@ -174,6 +229,13 @@ export async function getInvoice(req, res, next) {
       },
     });
     if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
+
+    if (req.user.role === 'CONTACT_USER') {
+      if (!req.user.contactId || invoice.salesOrder.contactId !== req.user.contactId) {
+        return res.status(403).json({ message: 'Access forbidden: You can only view your own invoices' });
+      }
+    }
+
     res.json(invoice);
   } catch (err) {
     next(err);

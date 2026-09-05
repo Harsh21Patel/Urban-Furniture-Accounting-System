@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { journalEntriesApi, journalsApi, accountsApi, contactsApi, analyticsApi } from '../../api/endpoints.js';
 import Navbar from '../../components/Navbar.jsx';
-import { BookOpen, Plus, ArrowLeft, AlertTriangle, Check, Trash2, ShieldAlert } from 'lucide-react';
+import { Plus, ArrowLeft, AlertTriangle, Check, Trash2, ShieldAlert } from 'lucide-react';
 
 export default function JournalEntries() {
   const [entries, setEntries] = useState([]);
@@ -117,45 +117,51 @@ export default function JournalEntries() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 pb-16">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-16 transition-colors duration-200">
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-6">
         
+        {/* Header Yellow Title Banner matching Image 6 */}
+        <div className="bg-amber-100 border border-amber-300 rounded-xl px-6 py-2.5 text-center shadow-sm dark:bg-amber-500/10 dark:border-amber-500/30">
+          <h2 className="text-base font-extrabold text-amber-900 dark:text-amber-300">Journals & Journal Entries (List View)</h2>
+          <p className="text-xs text-amber-800/80 dark:text-amber-400/80">Double-entry accounting log. Blocking warning enforced if Debit and Credit totals do not match.</p>
+        </div>
+
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm dark:shadow-xl">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate('/dashboard')}
-              className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
+              className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-2xl font-extrabold text-white">Journal Entries (Double-Entry Ledger)</h1>
-              <p className="text-xs text-slate-400">Recorded accounting transactions enforcing double-entry rules</p>
+              <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">Journal Entries</h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Recorded accounting transactions enforcing double-entry rules</p>
             </div>
           </div>
 
           <button
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg shadow-indigo-600/30 transition"
+            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md shadow-indigo-600/20 transition"
           >
             <Plus className="w-4 h-4" />
             <span>New Journal Entry</span>
           </button>
         </div>
 
-        {/* List View Table */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        {/* List View Table (Image 6) */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm dark:shadow-xl">
           {loading ? (
-            <div className="text-center py-16 text-slate-400">Loading journal entries...</div>
+            <div className="text-center py-16 text-slate-500 dark:text-slate-400">Loading journal entries...</div>
           ) : entries.length === 0 ? (
-            <div className="text-center py-16 text-slate-400">No journal entries recorded yet.</div>
+            <div className="text-center py-16 text-slate-500 dark:text-slate-400">No journal entries recorded yet.</div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-slate-300">
-                <thead className="bg-slate-800/80 text-xs uppercase text-slate-400 font-semibold tracking-wider border-b border-slate-800">
+              <table className="w-full text-left text-sm text-slate-700 dark:text-slate-300">
+                <thead className="bg-slate-100 dark:bg-slate-800/80 text-xs uppercase text-slate-600 dark:text-slate-400 font-semibold tracking-wider border-b border-slate-200 dark:border-slate-800">
                   <tr>
                     <th className="px-6 py-4">Date</th>
                     <th className="px-6 py-4">Number / Reference</th>
@@ -166,34 +172,34 @@ export default function JournalEntries() {
                     <th className="px-6 py-4 text-center">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800">
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                   {entries.map((e) => {
                     const entryDebit = e.lines?.reduce((s, l) => s + Number(l.debit), 0) || 0;
                     const entryCredit = e.lines?.reduce((s, l) => s + Number(l.credit), 0) || 0;
                     const partnerName = e.lines?.find((l) => l.partner)?.partner?.name || '-';
 
                     return (
-                      <tr key={e.id} className="hover:bg-slate-800/50 transition">
-                        <td className="px-6 py-4 text-xs font-mono text-slate-400">
+                      <tr key={e.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                        <td className="px-6 py-4 text-xs font-mono text-slate-500 dark:text-slate-400">
                           {new Date(e.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                         </td>
-                        <td className="px-6 py-4 font-bold text-white">
+                        <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">
                           {e.reference || `ENTRY/#${e.id}`}
                         </td>
                         <td className="px-6 py-4">
-                          <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-slate-800 text-indigo-300 border border-indigo-500/20">
+                          <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 text-indigo-700 dark:bg-slate-800 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/20">
                             {e.journal?.name}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-slate-300">{partnerName}</td>
-                        <td className="px-6 py-4 text-right font-bold text-emerald-400">
+                        <td className="px-6 py-4 text-slate-700 dark:text-slate-300">{partnerName}</td>
+                        <td className="px-6 py-4 text-right font-bold text-emerald-600 dark:text-emerald-400 font-mono">
                           ₹{entryDebit.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                         </td>
-                        <td className="px-6 py-4 text-right font-bold text-indigo-400">
+                        <td className="px-6 py-4 text-right font-bold text-indigo-600 dark:text-indigo-400 font-mono">
                           ₹{entryCredit.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                         </td>
                         <td className="px-6 py-4 text-center">
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
                             {e.status || 'POSTED'}
                           </span>
                         </td>
@@ -206,50 +212,50 @@ export default function JournalEntries() {
           )}
         </div>
 
-        {/* Create Form Modal (Matching Image 4) */}
+        {/* Create Form Modal (Matching Image 6) */}
         {showModal && (
-          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 max-w-4xl w-full shadow-2xl space-y-6 animate-in fade-in zoom-in-95 my-8">
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 max-w-4xl w-full shadow-2xl space-y-6 animate-in fade-in zoom-in-95 my-8">
               
-              <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
                 <div>
-                  <h2 className="text-xl font-extrabold text-white">New Journal Entry</h2>
-                  <p className="text-xs text-slate-400">Record debit and credit lines following double-entry accounting</p>
+                  <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">New Journal Entry</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Record debit and credit lines following double-entry accounting</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <button
                     onClick={handlePost}
                     disabled={!isBalanced || posting}
-                    className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold px-5 py-2 rounded-xl text-sm shadow-lg shadow-emerald-600/30 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-5 py-2 rounded-xl text-sm shadow-md transition disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <Check className="w-4 h-4" />
                     <span>Post Entry</span>
                   </button>
                   <button
                     onClick={() => setShowModal(false)}
-                    className="px-4 py-2 border border-slate-700 text-slate-300 hover:bg-slate-800 rounded-xl text-sm font-semibold transition"
+                    className="px-4 py-2 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-sm font-semibold transition"
                   >
                     Cancel
                   </button>
                 </div>
               </div>
 
-              {/* Blocking Warning Banner per Image 4 */}
+              {/* Blocking Warning Banner per Image 6 Wireframe */}
               {!isBalanced && (
-                <div className="bg-amber-500/10 border-2 border-amber-500/40 rounded-xl p-4 flex items-start gap-3 text-amber-300 text-xs">
-                  <ShieldAlert className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                <div className="bg-amber-50 dark:bg-amber-500/10 border-2 border-amber-400 dark:border-amber-500/40 rounded-xl p-4 flex items-start gap-3 text-amber-900 dark:text-amber-300 text-xs">
+                  <ShieldAlert className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-bold text-amber-200">Blocking Warning: Unbalanced Entry!</p>
+                    <p className="font-bold text-amber-950 dark:text-amber-200">Blocking warning if the debit and credit amount don't match!</p>
                     <p className="mt-0.5">
                       Total Debit (₹{totalDebit.toFixed(2)}) must equal Total Credit (₹{totalCredit.toFixed(2)}).
-                      Difference: ₹{Math.abs(totalDebit - totalCredit).toFixed(2)}. Please adjust line amounts before posting.
+                      Difference: ₹{Math.abs(totalDebit - totalCredit).toFixed(2)}.
                     </p>
                   </div>
                 </div>
               )}
 
               {error && (
-                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-red-400 text-xs flex items-center gap-2">
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-red-600 dark:text-red-400 text-xs flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                   <span>{error}</span>
                 </div>
@@ -258,7 +264,7 @@ export default function JournalEntries() {
               <form onSubmit={handlePost} className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
                       Accounting Date
                     </label>
                     <input
@@ -266,18 +272,18 @@ export default function JournalEntries() {
                       required
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 transition"
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 transition"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
                       Journal (Many to One)
                     </label>
                     <select
                       value={journalId}
                       onChange={(e) => setJournalId(e.target.value)}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 transition"
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 transition"
                     >
                       {journals.map((j) => (
                         <option key={j.id} value={j.id}>
@@ -288,7 +294,7 @@ export default function JournalEntries() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
                       Reference Number
                     </label>
                     <input
@@ -296,7 +302,7 @@ export default function JournalEntries() {
                       placeholder="e.g. MISC/2026/001"
                       value={reference}
                       onChange={(e) => setReference(e.target.value)}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 transition"
+                      className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 transition"
                     />
                   </div>
                 </div>
@@ -304,20 +310,20 @@ export default function JournalEntries() {
                 {/* Journal Items Table */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Journal Items</h3>
+                    <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Journal Items</h3>
                     <button
                       type="button"
                       onClick={addLine}
-                      className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                      className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>Add Line</span>
                     </button>
                   </div>
 
-                  <div className="border border-slate-800 rounded-xl overflow-hidden">
-                    <table className="w-full text-left text-xs text-slate-300">
-                      <thead className="bg-slate-800 text-slate-400 uppercase font-semibold">
+                  <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+                    <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
+                      <thead className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 uppercase font-semibold">
                         <tr>
                           <th className="px-3 py-2.5">Account (From CoA)</th>
                           <th className="px-3 py-2.5">Partner (Contact)</th>
@@ -327,15 +333,15 @@ export default function JournalEntries() {
                           <th className="px-2 py-2.5 w-10"></th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-800">
+                      <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                         {lines.map((line, idx) => (
-                          <tr key={idx} className="bg-slate-900">
+                          <tr key={idx} className="bg-white dark:bg-slate-900">
                             <td className="p-2">
                               <select
                                 required
                                 value={line.accountId}
                                 onChange={(e) => handleLineChange(idx, 'accountId', e.target.value)}
-                                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white focus:ring-1 focus:ring-indigo-500"
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                               >
                                 <option value="">-- Select Account --</option>
                                 {accounts.map((a) => (
@@ -350,7 +356,7 @@ export default function JournalEntries() {
                               <select
                                 value={line.partnerId}
                                 onChange={(e) => handleLineChange(idx, 'partnerId', e.target.value)}
-                                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white focus:ring-1 focus:ring-indigo-500"
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                               >
                                 <option value="">-- Select Partner --</option>
                                 {contacts.map((c) => (
@@ -365,7 +371,7 @@ export default function JournalEntries() {
                               <select
                                 value={line.analyticId}
                                 onChange={(e) => handleLineChange(idx, 'analyticId', e.target.value)}
-                                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white focus:ring-1 focus:ring-indigo-500"
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-900 dark:text-white focus:ring-1 focus:ring-indigo-500"
                               >
                                 <option value="">-- Analytic Account --</option>
                                 {analytics.map((an) => (
@@ -383,7 +389,7 @@ export default function JournalEntries() {
                                 placeholder="0.00"
                                 value={line.debit}
                                 onChange={(e) => handleLineChange(idx, 'debit', e.target.value)}
-                                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-right text-emerald-400 font-bold focus:ring-1 focus:ring-emerald-500"
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs text-right text-emerald-600 dark:text-emerald-400 font-bold focus:ring-1 focus:ring-emerald-500"
                               />
                             </td>
 
@@ -394,7 +400,7 @@ export default function JournalEntries() {
                                 placeholder="0.00"
                                 value={line.credit}
                                 onChange={(e) => handleLineChange(idx, 'credit', e.target.value)}
-                                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-right text-indigo-400 font-bold focus:ring-1 focus:ring-indigo-500"
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs text-right text-indigo-600 dark:text-indigo-400 font-bold focus:ring-1 focus:ring-indigo-500"
                               />
                             </td>
 
@@ -402,7 +408,7 @@ export default function JournalEntries() {
                               <button
                                 type="button"
                                 onClick={() => removeLine(idx)}
-                                className="p-1 text-slate-500 hover:text-red-400 transition"
+                                className="p-1 text-slate-400 hover:text-red-600 transition"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
@@ -410,13 +416,13 @@ export default function JournalEntries() {
                           </tr>
                         ))}
                       </tbody>
-                      <tfoot className="bg-slate-800/80 font-bold text-xs">
+                      <tfoot className="bg-slate-100 dark:bg-slate-800/80 font-bold text-xs">
                         <tr>
-                          <td colSpan={3} className="px-3 py-2.5 text-right uppercase text-slate-400">Total:</td>
-                          <td className="px-3 py-2.5 text-right text-emerald-400 font-mono text-sm">
+                          <td colSpan={3} className="px-3 py-2.5 text-right uppercase text-slate-500 dark:text-slate-400">Total:</td>
+                          <td className="px-3 py-2.5 text-right text-emerald-600 dark:text-emerald-400 font-mono text-sm">
                             ₹{totalDebit.toFixed(2)}
                           </td>
-                          <td className="px-3 py-2.5 text-right text-indigo-400 font-mono text-sm">
+                          <td className="px-3 py-2.5 text-right text-indigo-600 dark:text-indigo-400 font-mono text-sm">
                             ₹{totalCredit.toFixed(2)}
                           </td>
                           <td></td>

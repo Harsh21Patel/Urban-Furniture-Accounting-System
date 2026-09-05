@@ -7,15 +7,17 @@ import {
   createProduct,
   updateProduct,
   archiveProduct,
+  unarchiveProduct,
 } from '../controllers/product.controller.js';
 
 const router = Router();
 router.use(requireAuth);
 
-router.get('/', listProducts);
-router.get('/:id', getProduct);
+router.get('/', requireRole('ADMIN', 'ACCOUNTANT'), listProducts);
+router.get('/:id', requireRole('ADMIN', 'ACCOUNTANT'), getProduct);
 router.post('/', requireRole('ADMIN', 'ACCOUNTANT'), createProduct);
 router.put('/:id', requireRole('ADMIN', 'ACCOUNTANT'), updateProduct);
-router.delete('/:id', requireRole('ADMIN', 'ACCOUNTANT'), archiveProduct);
+router.delete('/:id', requireRole('ADMIN'), archiveProduct);
+router.post('/:id/unarchive', requireRole('ADMIN'), unarchiveProduct);
 
 export default router;

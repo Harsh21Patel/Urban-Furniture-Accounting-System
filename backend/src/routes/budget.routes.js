@@ -14,12 +14,12 @@ import {
 const router = Router();
 router.use(requireAuth);
 
-router.get('/', listBudgets);
-router.get('/:id', getBudget);
+router.get('/', requireRole('ADMIN', 'ACCOUNTANT'), listBudgets);
+router.get('/:id', requireRole('ADMIN', 'ACCOUNTANT'), getBudget);
 router.post('/', requireRole('ADMIN', 'ACCOUNTANT'), createBudget);
 router.post('/:id/confirm', requireRole('ADMIN', 'ACCOUNTANT'), confirmBudget);
 router.post('/:id/revise', requireRole('ADMIN', 'ACCOUNTANT'), reviseBudget);
 router.post('/:id/cancel', requireRole('ADMIN', 'ACCOUNTANT'), cancelBudget);
-router.get('/:id/transactions', getBudgetTransactions);
+router.get('/:id/transactions', requireRole('ADMIN', 'ACCOUNTANT'), getBudgetTransactions);
 
 export default router;

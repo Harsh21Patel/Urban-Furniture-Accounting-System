@@ -35,7 +35,7 @@ export default function PurchaseOrderList() {
       await purchaseApi.confirmOrder(id);
       fetchOrders();
     } catch (err) {
-      alert('Failed to confirm purchase order');
+      alert(err.response?.data?.message || 'Failed to confirm purchase order');
     }
   };
 

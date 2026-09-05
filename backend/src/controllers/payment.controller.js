@@ -11,6 +11,13 @@ export async function payInvoice(req, res, next) {
     });
     if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
 
+    // Authorization check for CONTACT_USER
+    if (req.user.role === 'CONTACT_USER') {
+      if (!req.user.contactId || invoice.salesOrder.contactId !== req.user.contactId) {
+        return res.status(403).json({ message: 'Access forbidden: You can only pay your own invoices' });
+      }
+    }
+
     const payment = await prisma.payment.create({
       data: {
         invoiceId: Number(invoiceId),
@@ -75,6 +82,13 @@ export async function payBill(req, res, next) {
     });
     if (!bill) return res.status(404).json({ message: 'Vendor bill not found' });
 
+    // Authorization check for CONTACT_USER
+    if (req.user.role === 'CONTACT_USER') {
+      if (!req.user.contactId || bill.purchaseOrder.contactId !== req.user.contactId) {
+        return res.status(403).json({ message: 'Access forbidden: You can only pay your own bills' });
+      }
+    }
+
     const payment = await prisma.payment.create({
       data: {
         vendorBillId: Number(vendorBillId),
@@ -131,7 +145,19 @@ export async function payBill(req, res, next) {
 
 export async function listPayments(req, res, next) {
   try {
+    const where = {};
+    if (req.user.role === 'CONTACT_USER') {
+      if (!req.user.contactId) {
+        return res.status(403).json({ message: 'User account is not linked to a valid contact' });
+      }
+      where.OR = [
+        { invoice: { salesOrder: { contactId: req.user.contactId } } },
+        { vendorBill: { purchaseOrder: { contactId: req.user.contactId } } },
+      ];
+    }
+
     const payments = await prisma.payment.findMany({
+      where,
       include: {
         invoice: { include: { salesOrder: { include: { contact: true } } } },
         vendorBill: { include: { purchaseOrder: { include: { contact: true } } } },

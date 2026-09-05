@@ -12,10 +12,10 @@ import {
 const router = Router();
 router.use(requireAuth);
 
-router.get('/', listAccounts);
-router.get('/:id', getAccount);
+router.get('/', requireRole('ADMIN', 'ACCOUNTANT'), listAccounts);
+router.get('/:id', requireRole('ADMIN', 'ACCOUNTANT'), getAccount);
 router.post('/', requireRole('ADMIN', 'ACCOUNTANT'), createAccount);
 router.put('/:id', requireRole('ADMIN', 'ACCOUNTANT'), updateAccount);
-router.delete('/:id', requireRole('ADMIN', 'ACCOUNTANT'), archiveAccount);
+router.delete('/:id', requireRole('ADMIN'), archiveAccount);
 
 export default router;

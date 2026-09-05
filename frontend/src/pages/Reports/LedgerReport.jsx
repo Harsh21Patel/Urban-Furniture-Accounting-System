@@ -5,7 +5,7 @@ import Navbar from '../../components/Navbar.jsx';
 import { ArrowLeft, Calendar, Filter, Printer, BookOpen } from 'lucide-react';
 
 export default function LedgerReport() {
-  const [lines, setLines] = useState([]);
+  const [reportData, setReportData] = useState(null);
   const [accounts, setAccounts] = useState([]);
   const [selectedAccount, setSelectedAccount] = useState('');
   const [dateFrom, setDateFrom] = useState('');
@@ -24,7 +24,7 @@ export default function LedgerReport() {
   const loadAccounts = async () => {
     try {
       const res = await accountsApi.list();
-      setAccounts(res.data);
+      setAccounts(res.data || []);
     } catch (err) {
       console.error('Error fetching accounts:', err);
     }
@@ -39,7 +39,7 @@ export default function LedgerReport() {
       if (dateTo) params.to = dateTo;
 
       const res = await reportsApi.ledgerReport(params);
-      setLines(res.data);
+      setReportData(res.data);
     } catch (err) {
       console.error('Error fetching General Ledger:', err);
     } finally {
@@ -51,8 +51,9 @@ export default function LedgerReport() {
     window.print();
   };
 
-  const totalDebit = lines.reduce((s, l) => s + Number(l.debit || 0), 0);
-  const totalCredit = lines.reduce((s, l) => s + Number(l.credit || 0), 0);
+  const isSingleAccount = !!selectedAccount && reportData?.account;
+  const singleLines = reportData?.lines || [];
+  const accountGroups = reportData?.accountGroups || [];
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 pb-16 print:bg-white print:text-black">
@@ -73,7 +74,7 @@ export default function LedgerReport() {
             <div>
               <h1 className="text-2xl font-extrabold text-white print:text-black">General Ledger Report</h1>
               <p className="text-xs text-slate-400 print:text-slate-600">
-                Detailed account ledger statement with debit, credit, and running balance
+                Detailed account ledger statement with per-account opening, debit, credit, and running balance
               </p>
             </div>
           </div>
@@ -98,7 +99,7 @@ export default function LedgerReport() {
               onChange={(e) => setSelectedAccount(e.target.value)}
               className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
             >
-              <option value="">All Accounts</option>
+              <option value="">All Accounts (Grouped by Account)</option>
               {accounts.map((acc) => (
                 <option key={acc.id} value={acc.id}>
                   {acc.name} ({acc.type})
@@ -128,13 +129,39 @@ export default function LedgerReport() {
           </div>
         </div>
 
-        {/* Ledger Table */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl print:border-black print:bg-white">
-          {loading ? (
-            <div className="text-center py-16 text-slate-400">Loading General Ledger...</div>
-          ) : lines.length === 0 ? (
-            <div className="text-center py-16 text-slate-400">No ledger entries found for selected criteria.</div>
-          ) : (
+        {/* Ledger Content */}
+        {loading ? (
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-16 text-center text-slate-400">
+            Loading General Ledger...
+          </div>
+        ) : isSingleAccount ? (
+          /* Single Account View with Opening & Closing Balance */
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl print:border-black print:bg-white space-y-0">
+            <div className="bg-slate-950/80 px-6 py-4 border-b border-slate-800 flex flex-wrap items-center justify-between gap-4 print:bg-slate-100 print:text-black">
+              <div>
+                <h2 className="text-base font-extrabold text-white print:text-black">
+                  {reportData.account.name}
+                </h2>
+                <span className="text-xs text-indigo-400 font-mono font-semibold">
+                  Type: {reportData.account.type}
+                </span>
+              </div>
+              <div className="flex items-center gap-6 text-xs font-mono">
+                <div>
+                  <span className="text-slate-400">Opening Balance: </span>
+                  <span className="font-bold text-white print:text-black">
+                    ₹{Number(reportData.openingBalance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-400">Closing Balance: </span>
+                  <span className="font-bold text-emerald-400 print:text-black">
+                    ₹{Number(reportData.closingBalance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              </div>
+            </div>
+
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs text-slate-300 print:text-black">
                 <thead className="bg-slate-950 text-slate-400 uppercase font-semibold text-[11px] border-b border-slate-800 print:bg-slate-100 print:text-black">
@@ -142,22 +169,31 @@ export default function LedgerReport() {
                     <th className="px-4 py-3">Date</th>
                     <th className="px-4 py-3">Reference</th>
                     <th className="px-4 py-3">Journal</th>
-                    <th className="px-4 py-3">Account</th>
                     <th className="px-4 py-3">Partner</th>
                     <th className="px-4 py-3 text-right">Debit (₹)</th>
                     <th className="px-4 py-3 text-right">Credit (₹)</th>
-                    <th className="px-4 py-3 text-right">Balance (₹)</th>
+                    <th className="px-4 py-3 text-right">Running Balance (₹)</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60 print:divide-slate-200">
-                  {lines.map((l) => (
+                  {/* Opening Balance Row */}
+                  <tr className="bg-slate-950/40 italic text-slate-400 font-medium">
+                    <td className="px-4 py-2.5 font-mono">{dateFrom || '-'}</td>
+                    <td colSpan={3} className="px-4 py-2.5">Opening Balance</td>
+                    <td className="px-4 py-2.5 text-right">-</td>
+                    <td className="px-4 py-2.5 text-right">-</td>
+                    <td className="px-4 py-2.5 text-right font-mono font-bold text-white print:text-black">
+                      ₹{Number(reportData.openingBalance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </td>
+                  </tr>
+
+                  {singleLines.map((l) => (
                     <tr key={l.id} className="hover:bg-slate-800/30 transition">
                       <td className="px-4 py-3 text-slate-400 font-mono print:text-black">
                         {new Date(l.date).toLocaleDateString()}
                       </td>
                       <td className="px-4 py-3 font-semibold text-white print:text-black">{l.reference || '-'}</td>
                       <td className="px-4 py-3 text-slate-300 print:text-black">{l.journal}</td>
-                      <td className="px-4 py-3 font-medium text-indigo-400 print:text-black">{l.account}</td>
                       <td className="px-4 py-3 text-slate-400 print:text-black">{l.partner || '-'}</td>
                       <td className="px-4 py-3 text-right font-mono text-emerald-400 print:text-black">
                         {l.debit > 0 ? `₹${l.debit.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : '-'}
@@ -173,21 +209,119 @@ export default function LedgerReport() {
                 </tbody>
                 <tfoot className="bg-slate-950 font-bold border-t border-slate-800 text-white print:bg-slate-100 print:text-black">
                   <tr>
-                    <td colSpan={5} className="px-4 py-3 text-right uppercase text-slate-400">Total:</td>
+                    <td colSpan={4} className="px-4 py-3 text-right uppercase text-slate-400">
+                      Total Activity / Closing Balance:
+                    </td>
                     <td className="px-4 py-3 text-right font-mono text-emerald-400 print:text-black">
-                      ₹{totalDebit.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                      ₹{singleLines.reduce((s, l) => s + Number(l.debit || 0), 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </td>
                     <td className="px-4 py-3 text-right font-mono text-rose-400 print:text-black">
-                      ₹{totalCredit.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                      ₹{singleLines.reduce((s, l) => s + Number(l.credit || 0), 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </td>
-                    <td className="px-4 py-3 text-right"></td>
+                    <td className="px-4 py-3 text-right font-mono font-black text-emerald-400 print:text-black">
+                      ₹{Number(reportData.closingBalance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </td>
                   </tr>
                 </tfoot>
               </table>
             </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          /* All Accounts - Grouped by Account per Option A */
+          <div className="space-y-6">
+            {accountGroups.length === 0 ? (
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-16 text-center text-slate-400">
+                No ledger transactions found for the selected period.
+              </div>
+            ) : (
+              accountGroups.map((grp) => (
+                <div
+                  key={grp.account.id}
+                  className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl print:border-black print:bg-white print:break-inside-avoid"
+                >
+                  <div className="bg-slate-950/80 px-6 py-3.5 border-b border-slate-800 flex flex-wrap items-center justify-between gap-4 print:bg-slate-100 print:text-black">
+                    <div className="flex items-center gap-3">
+                      <span className="font-extrabold text-white text-sm print:text-black">
+                        {grp.account.name}
+                      </span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300">
+                        {grp.account.type}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-6 text-xs font-mono">
+                      <div>
+                        <span className="text-slate-400">Opening: </span>
+                        <span className="font-bold text-white print:text-black">
+                          ₹{Number(grp.openingBalance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400">Closing: </span>
+                        <span className="font-bold text-emerald-400 print:text-black">
+                          ₹{Number(grp.closingBalance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs text-slate-300 print:text-black">
+                      <thead className="bg-slate-950/40 text-slate-400 uppercase font-semibold text-[10px] border-b border-slate-800/60 print:bg-slate-100 print:text-black">
+                        <tr>
+                          <th className="px-4 py-2.5">Date</th>
+                          <th className="px-4 py-2.5">Reference</th>
+                          <th className="px-4 py-2.5">Journal</th>
+                          <th className="px-4 py-2.5">Partner</th>
+                          <th className="px-4 py-2.5 text-right">Debit (₹)</th>
+                          <th className="px-4 py-2.5 text-right">Credit (₹)</th>
+                          <th className="px-4 py-2.5 text-right">Running Balance (₹)</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800/40">
+                        {grp.lines.map((l) => (
+                          <tr key={l.id} className="hover:bg-slate-800/30 transition">
+                            <td className="px-4 py-2.5 text-slate-400 font-mono print:text-black">
+                              {new Date(l.date).toLocaleDateString()}
+                            </td>
+                            <td className="px-4 py-2.5 font-semibold text-white print:text-black">{l.reference || '-'}</td>
+                            <td className="px-4 py-2.5 text-slate-300 print:text-black">{l.journal}</td>
+                            <td className="px-4 py-2.5 text-slate-400 print:text-black">{l.partner || '-'}</td>
+                            <td className="px-4 py-2.5 text-right font-mono text-emerald-400 print:text-black">
+                              {l.debit > 0 ? `₹${l.debit.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : '-'}
+                            </td>
+                            <td className="px-4 py-2.5 text-right font-mono text-rose-400 print:text-black">
+                              {l.credit > 0 ? `₹${l.credit.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : '-'}
+                            </td>
+                            <td className="px-4 py-2.5 text-right font-mono font-bold text-white print:text-black">
+                              ₹{l.runningBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot className="bg-slate-950/60 font-bold border-t border-slate-800/60 text-slate-200 print:text-black">
+                        <tr>
+                          <td colSpan={4} className="px-4 py-2.5 text-right uppercase text-[10px] text-slate-400">Total:</td>
+                          <td className="px-4 py-2.5 text-right font-mono text-emerald-400 print:text-black">
+                            ₹{grp.totalDebit.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                          </td>
+                          <td className="px-4 py-2.5 text-right font-mono text-rose-400 print:text-black">
+                            ₹{grp.totalCredit.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                          </td>
+                          <td className="px-4 py-2.5 text-right font-mono text-emerald-400 print:text-black">
+                            ₹{Number(grp.closingBalance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </main>
     </div>
   );
 }
+

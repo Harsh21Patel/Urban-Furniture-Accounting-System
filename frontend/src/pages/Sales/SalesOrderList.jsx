@@ -35,7 +35,7 @@ export default function SalesOrderList() {
       await salesApi.confirmOrder(id);
       fetchOrders();
     } catch (err) {
-      alert('Failed to confirm sales order');
+      alert(err.response?.data?.message || 'Failed to confirm sales order');
     }
   };
 

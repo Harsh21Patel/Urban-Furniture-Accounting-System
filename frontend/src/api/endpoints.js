@@ -12,19 +12,21 @@ export const authApi = {
 
 // --- Master Data ---
 export const contactsApi = {
-  list: () => api.get('/contacts'),
+  list: (params) => api.get('/contacts', { params }),
   get: (id) => api.get(`/contacts/${id}`),
   create: (data) => api.post('/contacts', data),
   update: (id, data) => api.put(`/contacts/${id}`, data),
   archive: (id) => api.delete(`/contacts/${id}`),
+  unarchive: (id) => api.post(`/contacts/${id}/unarchive`),
 };
 
 export const productsApi = {
-  list: () => api.get('/products'),
+  list: (params) => api.get('/products', { params }),
   get: (id) => api.get(`/products/${id}`),
   create: (data) => api.post('/products', data),
   update: (id, data) => api.put(`/products/${id}`, data),
   archive: (id) => api.delete(`/products/${id}`),
+  unarchive: (id) => api.post(`/products/${id}/unarchive`),
 };
 
 export const accountsApi = {
@@ -43,9 +45,15 @@ export const journalsApi = {
 };
 
 export const journalEntriesApi = {
-  list: () => api.get('/journal-entries'),
+  list: (params) => api.get('/journal-entries', { params }),
+  get: (id) => api.get(`/journal-entries/${id}`),
   create: (data) => api.post('/journal-entries', data),
+  postDraft: (id) => api.post(`/journal-entries/${id}/post`),
+  reverse: (id) => api.post(`/journal-entries/${id}/reverse`),
+  update: (id, data) => api.put(`/journal-entries/${id}`, data),
+  delete: (id) => api.delete(`/journal-entries/${id}`),
 };
+
 
 export const analyticsApi = {
   list: () => api.get('/analytics'),
