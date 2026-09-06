@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { budgetsApi, analyticsApi, contactsApi } from '../../api/endpoints.js';
 import Navbar from '../../components/Navbar.jsx';
+import ConfirmModal from '../../components/ConfirmModal.jsx';
 import {
   PieChart as PieIcon,
   Plus,
@@ -24,7 +25,13 @@ export default function BudgetList() {
   const [showTransModal, setShowTransModal] = useState(false);
   const [showReviseModal, setShowReviseModal] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState(null);
+  const [revisedAmount, setRevisedAmount] = useState('');
   const [budgetTransactions, setBudgetTransactions] = useState([]);
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    budget: null,
+    loading: false,
+  });
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -36,9 +43,6 @@ export default function BudgetList() {
   const [responsiblePerson, setResponsiblePerson] = useState('');
   const [analyticId, setAnalyticId] = useState('');
   const [committedAmount, setCommittedAmount] = useState('');
-
-  // Revision State
-  const [revisedAmount, setRevisedAmount] = useState('');
 
   const navigate = useNavigate();
 
@@ -109,13 +113,24 @@ export default function BudgetList() {
     }
   };
 
-  const handleCancel = async (id) => {
-    if (!window.confirm('Are you sure you want to cancel this budget?')) return;
+  const openCancelModal = (b) => {
+    setConfirmModal({
+      isOpen: true,
+      budget: b,
+      loading: false,
+    });
+  };
+
+  const handleConfirmCancel = async () => {
+    if (!confirmModal.budget) return;
+    setConfirmModal((prev) => ({ ...prev, loading: true }));
     try {
-      await budgetsApi.cancel(id);
+      await budgetsApi.cancel(confirmModal.budget.id);
+      setConfirmModal({ isOpen: false, budget: null, loading: false });
       fetchData();
     } catch (err) {
       alert('Failed to cancel budget');
+      setConfirmModal((prev) => ({ ...prev, loading: false }));
     }
   };
 
@@ -135,13 +150,6 @@ export default function BudgetList() {
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-4">
-        
-        {/* Banner */}
-        <div className="bg-amber-50 border border-amber-200 rounded-md px-4 py-2 text-center dark:bg-amber-900/20 dark:border-amber-800/40">
-          <h2 className="text-xs font-bold text-amber-900 dark:text-amber-300">Budget Flow (Form View & Lifecycle)</h2>
-          <p className="text-xs text-amber-800/80 dark:text-amber-400/80">Menu & Stage Mapping: Draft $\rightarrow$ Confirm $\rightarrow$ Revise $\rightarrow$ Cancelled. Achieved amount computed dynamically.</p>
-        </div>
-
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-md">
           <div className="flex items-center gap-3">
@@ -264,8 +272,8 @@ export default function BudgetList() {
 
                     {b.status !== 'CANCELLED' && b.status !== 'REVISED' && (
                       <button
-                        onClick={() => handleCancel(b.id)}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded bg-gray-100 dark:bg-gray-800 hover:bg-rose-600 dark:hover:bg-rose-600 text-gray-700 dark:text-gray-300 hover:text-white text-xs font-medium"
+                        onClick={() => openCancelModal(b)}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 border border-red-200 dark:border-red-800 text-xs font-semibold"
                       >
                         <XCircle className="w-3.5 h-3.5" />
                         <span>Cancel</span>
@@ -574,6 +582,18 @@ export default function BudgetList() {
         )}
 
       </main>
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ isOpen: false, budget: null, loading: false })}
+        onConfirm={handleConfirmCancel}
+        loading={confirmModal.loading}
+        title="Cancel Budget"
+        message={`Are you sure you want to cancel the budget "${confirmModal.budget?.name}"?`}
+        confirmText="Cancel Budget"
+        variant="danger"
+        icon={XCircle}
+      />
     </div>
   );
 }

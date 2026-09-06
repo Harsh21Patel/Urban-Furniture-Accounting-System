@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { contactsApi } from '../../api/endpoints.js';
 import Navbar from '../../components/Navbar.jsx';
+import ConfirmModal from '../../components/ConfirmModal.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import {
   LayoutList,
@@ -16,8 +17,6 @@ import {
   RotateCcw,
   UserCheck,
   UserX,
-  ChevronLeft,
-  ChevronRight,
   Filter,
   Eye
 } from 'lucide-react';
@@ -30,8 +29,12 @@ export default function ContactList() {
   const [typeFilter, setTypeFilter] = useState('ALL'); // 'ALL', 'CUSTOMER', 'VENDOR', 'BOTH'
   const [showArchived, setShowArchived] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const itemsPerPage = 8;
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    contact: null,
+    actionType: 'archive',
+    loading: false,
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -50,25 +53,40 @@ export default function ContactList() {
     }
   };
 
-  const handleArchive = async (id, e) => {
-    e.stopPropagation();
-    if (!window.confirm('Are you sure you want to archive this contact?')) return;
-    try {
-      await contactsApi.archive(id);
-      fetchContacts();
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed to archive contact');
-    }
+  const openArchiveModal = (contact, e) => {
+    if (e) e.stopPropagation();
+    setConfirmModal({
+      isOpen: true,
+      contact,
+      actionType: 'archive',
+      loading: false,
+    });
   };
 
-  const handleUnarchive = async (id, e) => {
-    e.stopPropagation();
-    if (!window.confirm('Are you sure you want to restore/unarchive this contact?')) return;
+  const openUnarchiveModal = (contact, e) => {
+    if (e) e.stopPropagation();
+    setConfirmModal({
+      isOpen: true,
+      contact,
+      actionType: 'unarchive',
+      loading: false,
+    });
+  };
+
+  const handleConfirmAction = async () => {
+    if (!confirmModal.contact) return;
+    setConfirmModal((prev) => ({ ...prev, loading: true }));
     try {
-      await contactsApi.unarchive(id);
+      if (confirmModal.actionType === 'archive') {
+        await contactsApi.archive(confirmModal.contact.id);
+      } else {
+        await contactsApi.unarchive(confirmModal.contact.id);
+      }
+      setConfirmModal({ isOpen: false, contact: null, actionType: 'archive', loading: false });
       fetchContacts();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to unarchive contact');
+      alert(err.response?.data?.message || `Failed to ${confirmModal.actionType} contact`);
+      setConfirmModal((prev) => ({ ...prev, loading: false }));
     }
   };
 
@@ -84,10 +102,6 @@ export default function ContactList() {
     return matchesSearch && matchesType;
   });
 
-  // Pagination logic
-  const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
-  const paginatedContacts = filtered.slice((page - 1) * itemsPerPage, page * itemsPerPage);
-
   const isAdmin = user?.role === 'ADMIN';
 
   return (
@@ -95,14 +109,6 @@ export default function ContactList() {
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-4">
-        {/* Master Data Title Banner */}
-        <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded px-4 py-2 text-center">
-          <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100">Master Data: Contact Management</h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Manage Customers, Vendors, and Both. Toggle between List & Kanban views. Click New to add or select a record to edit.
-          </p>
-        </div>
-
         {/* Controls Container */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-md">
           <div className="flex items-center gap-3">
@@ -127,13 +133,10 @@ export default function ContactList() {
               <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Search name, email, mobile..."
+                placeholder="Search name, email, phone, city..."
                 value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-                className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded pl-8 pr-3 py-1.5 text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-44 sm:w-56"
+                onChange={(e) => setSearch(e.target.value)}
+                className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded pl-8 pr-3 py-1.5 text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-48 sm:w-60"
               />
             </div>
 
@@ -142,15 +145,12 @@ export default function ContactList() {
               <Filter className="w-3.5 h-3.5 text-gray-500" />
               <select
                 value={typeFilter}
-                onChange={(e) => {
-                  setTypeFilter(e.target.value);
-                  setPage(1);
-                }}
+                onChange={(e) => setTypeFilter(e.target.value)}
                 className="bg-transparent text-gray-700 dark:text-gray-200 font-medium focus:outline-none cursor-pointer"
               >
                 <option value="ALL" className="dark:bg-gray-900">All Types</option>
-                <option value="CUSTOMER" className="dark:bg-gray-900">Customer</option>
-                <option value="VENDOR" className="dark:bg-gray-900">Vendor</option>
+                <option value="CUSTOMER" className="dark:bg-gray-900">Customers</option>
+                <option value="VENDOR" className="dark:bg-gray-900">Vendors</option>
                 <option value="BOTH" className="dark:bg-gray-900">Both</option>
               </select>
             </div>
@@ -160,10 +160,7 @@ export default function ContactList() {
               <input
                 type="checkbox"
                 checked={showArchived}
-                onChange={(e) => {
-                  setShowArchived(e.target.checked);
-                  setPage(1);
-                }}
+                onChange={(e) => setShowArchived(e.target.checked)}
                 className="rounded border-gray-300 text-primary focus:ring-primary"
               />
               <span>Include Archived</span>
@@ -211,7 +208,7 @@ export default function ContactList() {
           <div className="text-center py-12 text-gray-500 dark:text-gray-400 text-xs">Loading contacts...</div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-12 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md text-gray-500 dark:text-gray-400 text-xs">
-            No contacts found matching your criteria.
+            No contacts found matching your search.
           </div>
         ) : viewMode === 'list' ? (
           /* List View Table */
@@ -231,7 +228,7 @@ export default function ContactList() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-                  {paginatedContacts.map((c) => {
+                  {filtered.map((c) => {
                     const hasPortalUser = c.users && c.users.some((u) => u.role === 'CONTACT_USER');
                     return (
                       <tr
@@ -297,7 +294,7 @@ export default function ContactList() {
                           {c.archived ? (
                             isAdmin && (
                               <button
-                                onClick={(e) => handleUnarchive(c.id, e)}
+                                onClick={(e) => openUnarchiveModal(c, e)}
                                 title="Restore / Unarchive Contact"
                                 className="p-1 text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 rounded"
                               >
@@ -306,7 +303,7 @@ export default function ContactList() {
                             )
                           ) : (
                             <button
-                              onClick={(e) => handleArchive(c.id, e)}
+                              onClick={(e) => openArchiveModal(c, e)}
                               title="Archive Contact"
                               className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded"
                             >
@@ -324,24 +321,24 @@ export default function ContactList() {
         ) : (
           /* Kanban Card View */
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {paginatedContacts.map((c) => {
+            {filtered.map((c) => {
               const hasPortalUser = c.users && c.users.some((u) => u.role === 'CONTACT_USER');
               return (
                 <div
                   key={c.id}
                   onClick={() => navigate(`/contacts/${c.id}`)}
-                  className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-md p-4 cursor-pointer flex flex-col justify-between space-y-3"
+                  className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-md p-4 cursor-pointer flex flex-col justify-between space-y-3 min-w-0"
                 >
-                  <div className="space-y-2.5">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-2.5">
+                  <div className="space-y-2.5 min-w-0">
+                    <div className="flex items-start justify-between gap-2 min-w-0">
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
                         <img
                           src={c.imageUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'}
                           alt={c.name}
-                          className="w-10 h-10 rounded object-cover border border-gray-200 dark:border-gray-700"
+                          className="w-10 h-10 rounded object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0"
                         />
-                        <div className="overflow-hidden">
-                          <h3 className="font-bold text-gray-900 dark:text-white text-sm truncate">{c.name}</h3>
+                        <div className="overflow-hidden min-w-0 flex-1">
+                          <h3 className="font-bold text-gray-900 dark:text-white text-sm truncate" title={c.name}>{c.name}</h3>
                           <span
                             className={`inline-block px-1.5 py-0.5 mt-0.5 rounded text-[10px] font-semibold uppercase ${
                               c.type === 'CUSTOMER'
@@ -356,37 +353,43 @@ export default function ContactList() {
                         </div>
                       </div>
 
-                      {c.archived ? (
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300">
+                      {c.archived && (
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase bg-red-600 text-white flex-shrink-0">
                           Archived
                         </span>
-                      ) : (
-                        hasPortalUser && (
-                          <span className="p-0.5 rounded bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" title="Portal User Active">
-                            <UserCheck className="w-3.5 h-3.5" />
-                          </span>
-                        )
                       )}
                     </div>
 
-                    <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
-                      <div className="flex items-center gap-1.5">
-                        <Mail className="w-3.5 h-3.5 text-primary dark:text-primary-dark flex-shrink-0" />
+                    <div className="space-y-1 text-xs text-gray-600 dark:text-gray-300 pt-1 min-w-0">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <Mail className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
                         <span className="truncate">{c.email}</span>
                       </div>
                       {c.mobile && (
-                        <div className="flex items-center gap-1.5">
-                          <Phone className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-                          <span>{c.mobile}</span>
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <Phone className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                          <span className="truncate">{c.mobile}</span>
                         </div>
                       )}
                       {c.city && (
-                        <div className="flex items-center gap-1.5">
-                          <MapPin className="w-3.5 h-3.5 text-red-500 dark:text-red-400 flex-shrink-0" />
-                          <span>
-                            {c.city}, {c.state || c.country}
-                          </span>
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <MapPin className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                          <span className="truncate">{c.city}</span>
                         </div>
+                      )}
+                    </div>
+
+                    <div className="pt-1">
+                      {hasPortalUser ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
+                          <UserCheck className="w-3 h-3" />
+                          <span>Portal User</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                          <UserX className="w-3 h-3" />
+                          <span>No Portal</span>
+                        </span>
                       )}
                     </div>
                   </div>
@@ -401,7 +404,7 @@ export default function ContactList() {
                     {c.archived ? (
                       isAdmin && (
                         <button
-                          onClick={(e) => handleUnarchive(c.id, e)}
+                          onClick={(e) => openUnarchiveModal(c, e)}
                           title="Unarchive"
                           className="p-1 text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 rounded"
                         >
@@ -410,7 +413,7 @@ export default function ContactList() {
                       )
                     ) : (
                       <button
-                        onClick={(e) => handleArchive(c.id, e)}
+                        onClick={(e) => openArchiveModal(c, e)}
                         title="Archive"
                         className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded"
                       >
@@ -423,38 +426,23 @@ export default function ContactList() {
             })}
           </div>
         )}
-
-        {/* Pagination Bar */}
-        {filtered.length > 0 && (
-          <div className="flex items-center justify-between bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 px-4 py-3 rounded-md">
-            <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-              Showing <span className="font-bold text-gray-900 dark:text-white">{(page - 1) * itemsPerPage + 1}</span> to{' '}
-              <span className="font-bold text-gray-900 dark:text-white">{Math.min(page * itemsPerPage, filtered.length)}</span> of{' '}
-              <span className="font-bold text-gray-900 dark:text-white">{filtered.length}</span> contacts
-            </div>
-
-            <div className="flex items-center gap-1">
-              <button
-                disabled={page === 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="p-1.5 rounded border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <span className="text-xs font-medium text-gray-700 dark:text-gray-300 px-2">
-                Page {page} of {totalPages}
-              </span>
-              <button
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                className="p-1.5 rounded border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
       </main>
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ isOpen: false, contact: null, actionType: 'archive', loading: false })}
+        onConfirm={handleConfirmAction}
+        loading={confirmModal.loading}
+        title={confirmModal.actionType === 'archive' ? 'Archive Contact' : 'Restore Contact'}
+        message={
+          confirmModal.actionType === 'archive'
+            ? `Are you sure you want to archive "${confirmModal.contact?.name}"? You can view or restore archived contacts at any time.`
+            : `Are you sure you want to restore "${confirmModal.contact?.name}"?`
+        }
+        confirmText={confirmModal.actionType === 'archive' ? 'Archive' : 'Restore'}
+        variant={confirmModal.actionType === 'archive' ? 'danger' : 'info'}
+        icon={confirmModal.actionType === 'archive' ? Archive : RotateCcw}
+      />
     </div>
   );
 }

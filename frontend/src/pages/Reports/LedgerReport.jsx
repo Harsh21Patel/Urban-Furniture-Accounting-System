@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { reportsApi, accountsApi } from '../../api/endpoints.js';
 import Navbar from '../../components/Navbar.jsx';
+import PrintLetterhead from '../../components/PrintLetterhead.jsx';
 import { ArrowLeft, Calendar, Filter, Printer, BookOpen } from 'lucide-react';
 
 export default function LedgerReport() {
@@ -62,6 +63,16 @@ export default function LedgerReport() {
       </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+        {/* Print Letterhead */}
+        <PrintLetterhead
+          title="General Ledger Report"
+          subtitle={[
+            isSingleAccount ? reportData?.account?.name : 'All Accounts',
+            dateFrom && dateTo
+              ? `${new Date(dateFrom).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' })} — ${new Date(dateTo).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' })}`
+              : 'All Dates',
+          ].join(' · ')}
+        />
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-md print:bg-transparent print:border-none print:p-0">
           <div className="flex items-center gap-3">

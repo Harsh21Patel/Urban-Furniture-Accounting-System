@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { productsApi } from '../../api/endpoints.js';
 import Navbar from '../../components/Navbar.jsx';
+import ConfirmModal from '../../components/ConfirmModal.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import {
   LayoutList,
@@ -13,8 +14,6 @@ import {
   RotateCcw,
   Tag,
   Filter,
-  ChevronLeft,
-  ChevronRight,
   Eye,
   Box,
   Wrench,
@@ -31,8 +30,12 @@ export default function ProductList() {
   const [typeFilter, setTypeFilter] = useState('ALL'); // 'ALL', 'GOODS', 'SERVICE', 'COMBO'
   const [showArchived, setShowArchived] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const itemsPerPage = 8;
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    product: null,
+    actionType: 'archive',
+    loading: false,
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -51,25 +54,40 @@ export default function ProductList() {
     }
   };
 
-  const handleArchive = async (id, e) => {
-    e.stopPropagation();
-    if (!window.confirm('Are you sure you want to archive this product?')) return;
-    try {
-      await productsApi.archive(id);
-      fetchProducts();
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed to archive product');
-    }
+  const openArchiveModal = (product, e) => {
+    if (e) e.stopPropagation();
+    setConfirmModal({
+      isOpen: true,
+      product,
+      actionType: 'archive',
+      loading: false,
+    });
   };
 
-  const handleUnarchive = async (id, e) => {
-    e.stopPropagation();
-    if (!window.confirm('Are you sure you want to restore/unarchive this product?')) return;
+  const openUnarchiveModal = (product, e) => {
+    if (e) e.stopPropagation();
+    setConfirmModal({
+      isOpen: true,
+      product,
+      actionType: 'unarchive',
+      loading: false,
+    });
+  };
+
+  const handleConfirmAction = async () => {
+    if (!confirmModal.product) return;
+    setConfirmModal((prev) => ({ ...prev, loading: true }));
     try {
-      await productsApi.unarchive(id);
+      if (confirmModal.actionType === 'archive') {
+        await productsApi.archive(confirmModal.product.id);
+      } else {
+        await productsApi.unarchive(confirmModal.product.id);
+      }
+      setConfirmModal({ isOpen: false, product: null, actionType: 'archive', loading: false });
       fetchProducts();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to unarchive product');
+      alert(err.response?.data?.message || `Failed to ${confirmModal.actionType} product`);
+      setConfirmModal((prev) => ({ ...prev, loading: false }));
     }
   };
 
@@ -83,10 +101,6 @@ export default function ProductList() {
     const matchesType = typeFilter === 'ALL' || p.type === typeFilter;
     return matchesSearch && matchesType;
   });
-
-  // Pagination logic
-  const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
-  const paginatedProducts = filtered.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
   const getTypeBadge = (type) => {
     switch (type) {
@@ -112,7 +126,7 @@ export default function ProductList() {
           </span>
         );
       default:
-        return <span className="text-xs">{type}</span>;
+        return null;
     }
   };
 
@@ -121,132 +135,116 @@ export default function ProductList() {
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-4">
-        {/* Master Data Title Banner */}
-        <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded px-4 py-2 text-center">
-          <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100">Master Data: Product Master</h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Default List View & Kanban View toggle. Product Types: Goods (Physical Stock), Service (Non-inventory), Combo.
-          </p>
-        </div>
-
-        {/* Controls Container */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-md">
+        {/* Header & Controls */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-md">
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/dashboard')}
-              className="p-2 rounded bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
-              title="Back to Dashboard"
+              className="p-2 rounded bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
             <div>
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">Product Master</h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                {filtered.length} {filtered.length === 1 ? 'Product' : 'Products'} found
-              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Manage catalog goods, prices, categories, and services</p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Search Input */}
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search product name or category..."
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-                className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded pl-8 pr-3 py-1.5 text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-44 sm:w-56"
-              />
-            </div>
-
-            {/* Filter by Type */}
-            <div className="flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-2 py-1 text-xs">
-              <Filter className="w-3.5 h-3.5 text-gray-500" />
-              <select
-                value={typeFilter}
-                onChange={(e) => {
-                  setTypeFilter(e.target.value);
-                  setPage(1);
-                }}
-                className="bg-transparent text-gray-700 dark:text-gray-200 font-medium focus:outline-none cursor-pointer"
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <button
+                onClick={() => navigate('/products/new')}
+                className="flex items-center gap-1.5 bg-primary hover:bg-primary-hover dark:bg-primary-dark text-white text-xs font-semibold px-3 py-2 rounded transition"
               >
-                <option value="ALL" className="dark:bg-gray-900">All Types</option>
-                <option value="GOODS" className="dark:bg-gray-900">Goods</option>
-                <option value="SERVICE" className="dark:bg-gray-900">Service</option>
-                <option value="COMBO" className="dark:bg-gray-900">Combo</option>
-              </select>
-            </div>
+                <Plus className="w-4 h-4" />
+                <span>New Product</span>
+              </button>
+            )}
 
-            {/* Show Archived Toggle */}
-            <label className="flex items-center gap-1.5 cursor-pointer bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-2.5 py-1.5 text-xs text-gray-700 dark:text-gray-300 font-medium">
-              <input
-                type="checkbox"
-                checked={showArchived}
-                onChange={(e) => {
-                  setShowArchived(e.target.checked);
-                  setPage(1);
-                }}
-                className="rounded border-gray-300 text-primary focus:ring-primary"
-              />
-              <span>Include Archived</span>
-            </label>
-
-            {/* View Mode Toggle */}
-            <div className="flex items-center bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded p-0.5">
+            <div className="flex items-center bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded p-1">
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-1 rounded text-xs ${
+                title="List View"
+                className={`p-1.5 rounded text-xs transition ${
                   viewMode === 'list'
-                    ? 'bg-primary/10 text-primary dark:bg-primary-dark/20 dark:text-primary-dark font-medium'
+                    ? 'bg-white dark:bg-gray-700 text-primary dark:text-primary-dark shadow-sm'
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`}
-                title="List View"
               >
                 <LayoutList className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setViewMode('kanban')}
-                className={`p-1 rounded text-xs ${
+                title="Kanban View"
+                className={`p-1.5 rounded text-xs transition ${
                   viewMode === 'kanban'
-                    ? 'bg-primary/10 text-primary dark:bg-primary-dark/20 dark:text-primary-dark font-medium'
+                    ? 'bg-white dark:bg-gray-700 text-primary dark:text-primary-dark shadow-sm'
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 }`}
-                title="Kanban View"
               >
                 <LayoutGrid className="w-4 h-4" />
               </button>
             </div>
-
-            {/* New Button */}
-            <button
-              onClick={() => navigate('/products/new')}
-              className="flex items-center gap-1 bg-primary hover:bg-primary-hover dark:bg-primary-dark dark:hover:bg-primary text-white text-xs font-medium px-3 py-1.5 rounded"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>New</span>
-            </button>
           </div>
         </div>
 
-        {/* Content View */}
+        {/* Filter / Search Bar */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-3 rounded-md">
+          <div className="relative w-full sm:w-80">
+            <Search className="w-4 h-4 absolute left-3 top-2.5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search by name, category..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-9 pr-3 py-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-primary"
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+            <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-2 py-1">
+              <Filter className="w-3.5 h-3.5 text-gray-500" />
+              <select
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+                className="bg-transparent text-xs text-gray-700 dark:text-gray-300 focus:outline-none"
+              >
+                <option value="ALL">All Types</option>
+                <option value="GOODS">Goods Only</option>
+                <option value="SERVICE">Service Only</option>
+                <option value="COMBO">Combo Only</option>
+              </select>
+            </div>
+
+            <label className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400 cursor-pointer select-none bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-2.5 py-1">
+              <input
+                type="checkbox"
+                checked={showArchived}
+                onChange={(e) => setShowArchived(e.target.checked)}
+                className="rounded text-primary focus:ring-primary h-3.5 w-3.5"
+              />
+              <span>Show Archived</span>
+            </label>
+          </div>
+        </div>
+
+        {/* Content Section */}
         {loading ? (
-          <div className="text-center py-12 text-gray-500 dark:text-gray-400 text-xs">Loading products...</div>
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md p-12 text-center text-xs text-gray-500 dark:text-gray-400">
+            Loading products...
+          </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-12 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md text-gray-500 dark:text-gray-400 text-xs">
-            No products found matching your search.
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md p-12 text-center text-xs text-gray-500 dark:text-gray-400">
+            No products found.
           </div>
         ) : viewMode === 'list' ? (
           /* List View Table */
           <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-gray-800 dark:text-gray-200">
-                <thead className="bg-gray-50 dark:bg-gray-800/60 text-xs uppercase text-gray-600 dark:text-gray-300 font-semibold tracking-wider border-b border-gray-200 dark:border-gray-800">
+              <table className="w-full text-left text-xs text-gray-700 dark:text-gray-300">
+                <thead className="bg-gray-50 dark:bg-gray-800/60 uppercase text-[11px] text-gray-600 dark:text-gray-400 font-semibold border-b border-gray-200 dark:border-gray-800">
                   <tr>
-                    <th className="px-4 py-2.5">Image</th>
+                    <th className="px-4 py-2.5 w-12">Image</th>
                     <th className="px-4 py-2.5">Product Name</th>
                     <th className="px-4 py-2.5">Category</th>
                     <th className="px-4 py-2.5">Type</th>
@@ -257,7 +255,7 @@ export default function ProductList() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-                  {paginatedProducts.map((p) => (
+                  {filtered.map((p) => (
                     <tr
                       key={p.id}
                       onClick={() => navigate(`/products/${p.id}`)}
@@ -301,7 +299,7 @@ export default function ProductList() {
                         {p.archived ? (
                           isAdmin && (
                             <button
-                              onClick={(e) => handleUnarchive(p.id, e)}
+                              onClick={(e) => openUnarchiveModal(p, e)}
                               title="Restore / Unarchive Product"
                               className="p-1 text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 rounded"
                             >
@@ -310,7 +308,7 @@ export default function ProductList() {
                           )
                         ) : (
                           <button
-                            onClick={(e) => handleArchive(p.id, e)}
+                            onClick={(e) => openArchiveModal(p, e)}
                             title="Archive Product"
                             className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded"
                           >
@@ -327,7 +325,7 @@ export default function ProductList() {
         ) : (
           /* Kanban View Cards */
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {paginatedProducts.map((p) => (
+            {filtered.map((p) => (
               <div
                 key={p.id}
                 onClick={() => navigate(`/products/${p.id}`)}
@@ -365,49 +363,57 @@ export default function ProductList() {
                       ₹{Number(p.salesPrice).toLocaleString('en-IN')}
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-medium">Cost Price</p>
-                    <p className="font-bold text-gray-700 dark:text-gray-300 font-mono">
-                      ₹{Number(p.cost).toLocaleString('en-IN')}
-                    </p>
+                  <div className="text-right flex items-center gap-2">
+                    <div>
+                      <p className="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-medium">Cost Price</p>
+                      <p className="font-bold text-gray-700 dark:text-gray-300 font-mono">
+                        ₹{Number(p.cost).toLocaleString('en-IN')}
+                      </p>
+                    </div>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      {p.archived ? (
+                        isAdmin && (
+                          <button
+                            onClick={(e) => openUnarchiveModal(p, e)}
+                            title="Unarchive Product"
+                            className="p-1 text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 rounded"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                          </button>
+                        )
+                      ) : (
+                        <button
+                          onClick={(e) => openArchiveModal(p, e)}
+                          title="Archive Product"
+                          className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded"
+                        >
+                          <Archive className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
             ))}
           </div>
         )}
-
-        {/* Pagination Bar */}
-        {filtered.length > 0 && (
-          <div className="flex items-center justify-between bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 px-4 py-3 rounded-md">
-            <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-              Showing <span className="font-bold text-gray-900 dark:text-white">{(page - 1) * itemsPerPage + 1}</span> to{' '}
-              <span className="font-bold text-gray-900 dark:text-white">{Math.min(page * itemsPerPage, filtered.length)}</span> of{' '}
-              <span className="font-bold text-gray-900 dark:text-white">{filtered.length}</span> products
-            </div>
-
-            <div className="flex items-center gap-1">
-              <button
-                disabled={page === 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="p-1.5 rounded border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <span className="text-xs font-medium text-gray-700 dark:text-gray-300 px-2">
-                Page {page} of {totalPages}
-              </span>
-              <button
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                className="p-1.5 rounded border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
       </main>
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ isOpen: false, product: null, actionType: 'archive', loading: false })}
+        onConfirm={handleConfirmAction}
+        loading={confirmModal.loading}
+        title={confirmModal.actionType === 'archive' ? 'Archive Product' : 'Restore Product'}
+        message={
+          confirmModal.actionType === 'archive'
+            ? `Are you sure you want to archive "${confirmModal.product?.name}"? You can view or restore archived products at any time.`
+            : `Are you sure you want to restore "${confirmModal.product?.name}"?`
+        }
+        confirmText={confirmModal.actionType === 'archive' ? 'Archive' : 'Restore'}
+        variant={confirmModal.actionType === 'archive' ? 'danger' : 'info'}
+        icon={confirmModal.actionType === 'archive' ? Archive : RotateCcw}
+      />
     </div>
   );
 }

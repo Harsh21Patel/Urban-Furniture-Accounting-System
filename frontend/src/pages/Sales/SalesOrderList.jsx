@@ -2,11 +2,27 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { salesApi, paymentsApi } from '../../api/endpoints.js';
 import Navbar from '../../components/Navbar.jsx';
-import { ShoppingBag, Plus, ArrowLeft, CheckCircle2, FileText, CreditCard, DollarSign } from 'lucide-react';
+import {
+  ShoppingBag,
+  Plus,
+  ArrowLeft,
+  CheckCircle2,
+  FileText,
+  CreditCard,
+  DollarSign,
+  Search,
+  Filter,
+  Calendar,
+  X
+} from 'lucide-react';
 
 export default function SalesOrderList() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [showPayModal, setShowPayModal] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [payAmount, setPayAmount] = useState('');
@@ -65,6 +81,43 @@ export default function SalesOrderList() {
     }
   };
 
+  const hasActiveFilters = search || statusFilter !== 'ALL' || dateFrom || dateTo;
+
+  const clearFilters = () => {
+    setSearch('');
+    setStatusFilter('ALL');
+    setDateFrom('');
+    setDateTo('');
+  };
+
+  const filteredOrders = orders.filter((o) => {
+    const q = search.toLowerCase().trim();
+    const orderIdStr = `so/#${o.id}`.toLowerCase();
+    const customerName = (o.contact?.name || '').toLowerCase();
+    const itemsStr = (o.lines || []).map((l) => l.product?.name || '').join(' ').toLowerCase();
+
+    const matchesSearch =
+      !q ||
+      orderIdStr.includes(q) ||
+      customerName.includes(q) ||
+      itemsStr.includes(q) ||
+      String(o.id).includes(q);
+
+    const matchesStatus = statusFilter === 'ALL' || o.status === statusFilter;
+
+    let matchesDate = true;
+    if (dateFrom) {
+      matchesDate = matchesDate && new Date(o.date) >= new Date(dateFrom);
+    }
+    if (dateTo) {
+      const end = new Date(dateTo);
+      end.setHours(23, 59, 59, 999);
+      matchesDate = matchesDate && new Date(o.date) <= end;
+    }
+
+    return matchesSearch && matchesStatus && matchesDate;
+  });
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 pb-16">
       <Navbar />
@@ -76,7 +129,7 @@ export default function SalesOrderList() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/dashboard')}
-              className="p-2 rounded bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+              className="p-2 rounded bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
@@ -105,12 +158,82 @@ export default function SalesOrderList() {
           </div>
         </div>
 
+        {/* Filter / Search Bar */}
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-3 rounded-md">
+          {/* Search Box */}
+          <div className="relative flex-1 min-w-[240px]">
+            <Search className="w-4 h-4 absolute left-3 top-2.5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search by SO #, Customer, Product..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-9 pr-3 py-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-primary"
+            />
+          </div>
+
+          {/* Filter Controls */}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Status Dropdown */}
+            <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-2.5 py-1.5">
+              <Filter className="w-3.5 h-3.5 text-gray-500" />
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="bg-transparent text-xs text-gray-700 dark:text-gray-300 focus:outline-none font-medium"
+              >
+                <option value="ALL">All Statuses</option>
+                <option value="DRAFT">Draft</option>
+                <option value="CONFIRMED">Confirmed</option>
+                <option value="INVOICED">Invoiced</option>
+              </select>
+            </div>
+
+            {/* Date Range Inputs */}
+            <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-2 py-1">
+              <Calendar className="w-3.5 h-3.5 text-gray-500" />
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                title="From Date"
+                className="bg-transparent text-xs text-gray-700 dark:text-gray-300 focus:outline-none"
+              />
+              <span className="text-gray-400 text-xs">to</span>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                title="To Date"
+                className="bg-transparent text-xs text-gray-700 dark:text-gray-300 focus:outline-none"
+              />
+            </div>
+
+            {/* Clear Filters Button */}
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 border border-rose-200 dark:border-rose-900 rounded transition"
+                title="Clear Filters"
+              >
+                <X className="w-3.5 h-3.5" />
+                <span>Clear</span>
+              </button>
+            )}
+
+            {/* Results Count Badge */}
+            <span className="text-xs text-gray-500 dark:text-gray-400 px-1 font-medium">
+              Showing {filteredOrders.length} of {orders.length}
+            </span>
+          </div>
+        </div>
+
         {/* Table */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md overflow-hidden">
           {loading ? (
             <div className="text-center py-12 text-xs text-gray-500 dark:text-gray-400">Loading sales orders...</div>
-          ) : orders.length === 0 ? (
-            <div className="text-center py-12 text-xs text-gray-500 dark:text-gray-400">No sales orders found.</div>
+          ) : filteredOrders.length === 0 ? (
+            <div className="text-center py-12 text-xs text-gray-500 dark:text-gray-400">No sales orders found matching the filter criteria.</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs text-gray-700 dark:text-gray-300">
@@ -126,9 +249,9 @@ export default function SalesOrderList() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-                  {orders.map((o) => {
+                  {filteredOrders.map((o) => {
                     const totalAmt = o.lines?.reduce(
-                      (s, l) => s + Number(l.unitPrice) * l.quantity * (1 + Number(l.taxPercent) / 100),
+                      (s, l) => s + Number(l.unitPrice) * l.quantity * (1 - Number(l.discountPercent || 0) / 100) * (1 + Number(l.taxPercent) / 100),
                       0
                     ) || 0;
 

@@ -108,9 +108,6 @@ export default function Dashboard() {
         {/* Header Banner */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="inline-block px-2.5 py-0.5 bg-primary/10 dark:bg-primary-dark/20 rounded text-[11px] font-semibold text-primary dark:text-primary-dark uppercase tracking-wider mb-1">
-              App Dashboard
-            </div>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Urban Furniture Accounting</h1>
             <p className="text-xs text-gray-500 dark:text-gray-400 max-w-2xl">
               Double-entry accounting, sales invoices, vendor bills, and analytical budget control system.

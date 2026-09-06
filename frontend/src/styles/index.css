@@ -1,3 +1,70 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ============================================================
+   GLOBAL PRINT / PDF STYLES
+   Applied whenever window.print() or Ctrl+P is triggered.
+   ============================================================ */
+@media print {
+  /* A4 portrait, 15mm top/bottom, 12mm sides */
+  @page {
+    size: A4 portrait;
+    margin: 15mm 12mm 18mm 12mm;
+  }
+
+  /* Ensure colours are preserved exactly (for indigo bar, badges, etc.) */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Reset the page background */
+  html, body {
+    background: #ffffff !important;
+    color: #111827 !important;
+    font-size: 11pt;
+  }
+
+  /* Hide all interactive / navigational UI */
+  nav,
+  header,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Remove box shadows, scroll overflow */
+  * {
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  /* Clean page breaks */
+  .print-page-break {
+    page-break-before: always;
+  }
+
+  .print-avoid-break {
+    page-break-inside: avoid;
+  }
+
+  /* The PrintLetterhead indigo top-border strip */
+  .print-letterhead {
+    border-top: 0 !important; /* handled inline in component */
+  }
+
+  /* Tables — keep header on each page */
+  thead { display: table-header-group; }
+  tfoot { display: table-footer-group; }
+  tr    { page-break-inside: avoid; }
+
+  /* Disclaimer footer */
+  .print-disclaimer {
+    border-top: 1px solid #d1d5db;
+    margin-top: 24pt;
+    padding-top: 6pt;
+    font-size: 8pt;
+    color: #6b7280;
+    text-align: center;
+  }
+}

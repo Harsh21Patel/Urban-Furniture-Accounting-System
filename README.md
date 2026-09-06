@@ -136,50 +136,16 @@ Urban/
 
 ---
 
-### 2️⃣ Frontend Setup
+### Frontend
+```bash
+cd frontend
+npm install
+npm run dev                # starts on http://localhost:5173
+```
 
-1. **Navigate to frontend directory**:
-   ```bash
-   cd frontend
-   ```
-
-2. **Install Dependencies**:
-   ```bash
-   npm install
-   ```
-
-3. **Start Development Server**:
-   ```bash
-   npm run dev
-   # Web app starts on http://localhost:5173
-   ```
-
----
-
-## 🔑 Demo Account Credentials
-
-Use any of the seeded credentials below to explore different role perspectives:
-
-| Role | Name | Login ID | Password | Access Level |
-| :--- | :--- | :--- | :--- | :--- |
-| **ADMIN** | Administrator | `admin` | `Admin@123!` | Full system control & User Creation |
-| **ACCOUNTANT** | Senior Accountant | `accountant` | `Acc@123!` | Full accounting, sales, purchasing & reports |
-| **ACCOUNTANT** | Jay Mehta (CA) | `ca.jay` | `Cajay@1234` | Financial oversight & reporting |
-| **CONTACT_USER** | Nimesh Pathak | `nimesh` | `User@123!` | Customer Portal access (Apex Interiors) |
-| **CONTACT_USER** | Priya Sharma | `priya` | `User@123!` | Customer Portal access (Sharma Living) |
-
----
-
-## 🛠️ Database Management & Utilities
-
-- **Open Prisma Studio**:
-  To inspect database tables visually:
-  ```bash
-  cd backend
-  npm run prisma:studio
-  ```
-- **Re-seed Data**:
-  ```bash
-  cd backend
-  npm run seed
-  ```
+## Build priority (24hr plan)
+1. Auth + roles (Admin / Accountant / Contact)
+2. Master data CRUD (Contacts, Products, Chart of Accounts, Journals)
+3. Transaction flow (PO→Bill→Payment, SO→Invoice→Payment) with auto journal entries
+4. Reports (Balance Sheet, P&L, Budget) as ledger aggregations
+5. Polish + deploy

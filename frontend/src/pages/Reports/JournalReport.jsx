@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { reportsApi, journalsApi } from '../../api/endpoints.js';
 import Navbar from '../../components/Navbar.jsx';
+import PrintLetterhead from '../../components/PrintLetterhead.jsx';
 import { ArrowLeft, Calendar, Printer, BookOpen } from 'lucide-react';
 
 export default function JournalReport() {
   const [entries, setEntries] = useState([]);
   const [journals, setJournals] = useState([]);
+  const [selectedType, setSelectedType] = useState('ALL');
   const [selectedJournal, setSelectedJournal] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
@@ -19,7 +21,7 @@ export default function JournalReport() {
 
   useEffect(() => {
     fetchJournals();
-  }, [selectedJournal, dateFrom, dateTo]);
+  }, [selectedType, selectedJournal, dateFrom, dateTo]);
 
   const loadJournals = async () => {
     try {
@@ -39,7 +41,11 @@ export default function JournalReport() {
       if (dateTo) params.to = dateTo;
 
       const res = await reportsApi.journalReport(params);
-      setEntries(res.data);
+      let data = res.data || [];
+      if (selectedType !== 'ALL') {
+        data = data.filter((e) => e.journal?.type === selectedType);
+      }
+      setEntries(data);
     } catch (err) {
       console.error('Error fetching Journal Report:', err);
     } finally {
@@ -58,6 +64,19 @@ export default function JournalReport() {
       </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+        {/* Print Letterhead */}
+        <PrintLetterhead
+          title="Journal Report"
+          subtitle={[
+            selectedType !== 'ALL' ? `Type: ${selectedType}` : '',
+            selectedJournal
+              ? (journals.find(j => String(j.id) === String(selectedJournal))?.name || 'Selected Journal')
+              : 'All Journals',
+            dateFrom && dateTo
+              ? `${new Date(dateFrom).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' })} — ${new Date(dateTo).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' })}`
+              : 'All Dates',
+          ].filter(Boolean).join(' · ')}
+        />
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-md print:bg-transparent print:border-none print:p-0">
           <div className="flex items-center gap-3">
@@ -87,7 +106,26 @@ export default function JournalReport() {
         </div>
 
         {/* Filters */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-md print:hidden">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-md print:hidden">
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Journal Type</label>
+            <select
+              value={selectedType}
+              onChange={(e) => {
+                setSelectedType(e.target.value);
+                setSelectedJournal('');
+              }}
+              className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-3 py-1.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-primary"
+            >
+              <option value="ALL">All Types</option>
+              <option value="SALES">Sales (Customer Invoices)</option>
+              <option value="PURCHASE">Purchase (Vendor Bills)</option>
+              <option value="BANK">Bank Operations</option>
+              <option value="CASH">Cash Operations</option>
+              <option value="MISC">Miscellaneous (General)</option>
+            </select>
+          </div>
+
           <div>
             <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Filter Journal</label>
             <select
@@ -96,11 +134,13 @@ export default function JournalReport() {
               className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-3 py-1.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-primary"
             >
               <option value="">All Journals</option>
-              {journals.map((j) => (
-                <option key={j.id} value={j.id}>
-                  {j.name} ({j.type})
-                </option>
-              ))}
+              {journals
+                .filter((j) => selectedType === 'ALL' || j.type === selectedType)
+                .map((j) => (
+                  <option key={j.id} value={j.id}>
+                    {j.name} ({j.type})
+                  </option>
+                ))}
             </select>
           </div>
 

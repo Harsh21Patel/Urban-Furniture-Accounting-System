@@ -15,6 +15,7 @@ export async function createSalesOrder(req, res, next) {
       productId: Number(l.productId),
       quantity: Number(l.quantity),
       unitPrice: Number(l.unitPrice),
+      discountPercent: Number(l.discountPercent || 0),
       taxPercent: Number(l.taxPercent || 0),
       analyticId: l.analyticId ? Number(l.analyticId) : null,
     }));
@@ -49,7 +50,10 @@ export async function confirmSalesOrder(req, res, next) {
     const orderDate = order.createdAt || new Date();
     for (const line of order.lines) {
       if (!line.analyticId) continue;
-      const lineTotal = Number(line.unitPrice) * line.quantity * (1 + Number(line.taxPercent) / 100);
+      const baseSub = Number(line.unitPrice) * line.quantity;
+      const discAmt = baseSub * (Number(line.discountPercent || 0) / 100);
+      const taxable = baseSub - discAmt;
+      const lineTotal = taxable * (1 + Number(line.taxPercent || 0) / 100);
       const budgets = await prisma.budget.findMany({
         where: {
           analyticId: line.analyticId,
@@ -123,10 +127,12 @@ export async function generateInvoice(req, res, next) {
       return res.status(409).json({ message: 'Invoice already generated for this Sales Order' });
     }
 
-    const totalAmount = order.lines.reduce(
-      (sum, l) => sum + Number(l.unitPrice) * l.quantity * (1 + Number(l.taxPercent) / 100),
-      0
-    );
+    const totalAmount = order.lines.reduce((sum, l) => {
+      const baseSub = Number(l.unitPrice) * l.quantity;
+      const discAmt = baseSub * (Number(l.discountPercent || 0) / 100);
+      const taxable = baseSub - discAmt;
+      return sum + taxable * (1 + Number(l.taxPercent || 0) / 100);
+    }, 0);
 
     const invoice = await prisma.invoice.create({
       data: {

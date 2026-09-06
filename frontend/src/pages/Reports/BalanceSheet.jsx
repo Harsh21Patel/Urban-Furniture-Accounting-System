@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { reportsApi } from '../../api/endpoints.js';
 import Navbar from '../../components/Navbar.jsx';
+import PrintLetterhead from '../../components/PrintLetterhead.jsx';
 import { ArrowLeft, Calendar, Printer, CheckCircle2, AlertOctagon } from 'lucide-react';
 
 export default function BalanceSheet() {
@@ -40,13 +41,11 @@ export default function BalanceSheet() {
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
-        
-        {/* Header Banner */}
-        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md px-4 py-2 text-center">
-          <h2 className="text-sm font-bold text-amber-900 dark:text-amber-300">Balance Sheet</h2>
-          <p className="text-xs text-amber-700 dark:text-amber-400">Assets (Bank, Cash, Debtors) vs Liabilities & Equity (Creditors, Capital, Retained Earnings). Click Print for PDF download.</p>
-        </div>
-
+        {/* Print Letterhead */}
+        <PrintLetterhead
+          title="Balance Sheet"
+          subtitle={`As of ${new Date(asOf).toLocaleDateString('en-IN', { day:'2-digit', month:'long', year:'numeric' })}`}
+        />
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-md">
           <div className="flex items-center gap-3">

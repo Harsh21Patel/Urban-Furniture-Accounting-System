@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { accountsApi } from '../../api/endpoints.js';
 import Navbar from '../../components/Navbar.jsx';
+import ConfirmModal from '../../components/ConfirmModal.jsx';
 import { BookOpen, Plus, ArrowLeft, AlertCircle, Archive } from 'lucide-react';
 
 export default function ChartOfAccounts() {
@@ -11,6 +12,11 @@ export default function ChartOfAccounts() {
   const [type, setType] = useState('ASSET');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    account: null,
+    loading: false,
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,13 +48,24 @@ export default function ChartOfAccounts() {
     }
   };
 
-  const handleArchive = async (id) => {
-    if (!window.confirm('Are you sure you want to archive this account?')) return;
+  const openArchiveModal = (acc) => {
+    setConfirmModal({
+      isOpen: true,
+      account: acc,
+      loading: false,
+    });
+  };
+
+  const handleConfirmArchive = async () => {
+    if (!confirmModal.account) return;
+    setConfirmModal((prev) => ({ ...prev, loading: true }));
     try {
-      await accountsApi.archive(id);
+      await accountsApi.archive(confirmModal.account.id);
+      setConfirmModal({ isOpen: false, account: null, loading: false });
       fetchAccounts();
     } catch (err) {
       alert('Failed to archive account');
+      setConfirmModal((prev) => ({ ...prev, loading: false }));
     }
   };
 
@@ -62,13 +79,6 @@ export default function ChartOfAccounts() {
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-4">
-        
-        {/* Banner */}
-        <div className="bg-amber-50 border border-amber-200 rounded-md px-4 py-2 text-center dark:bg-amber-900/20 dark:border-amber-800/40">
-          <h2 className="text-xs font-bold text-amber-900 dark:text-amber-300">Chart of Accounts (List View)</h2>
-          <p className="text-xs text-amber-800/80 dark:text-amber-400/80">All accounts pre-configured or created on demand, classified for Balance Sheet or Profit & Loss.</p>
-        </div>
-
         {/* Header & Controls */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-md">
           <div className="flex items-center gap-3">
@@ -139,7 +149,7 @@ export default function ChartOfAccounts() {
                       </td>
                       <td className="px-4 py-3 text-right">
                         <button
-                          onClick={() => handleArchive(acc.id)}
+                          onClick={() => openArchiveModal(acc)}
                           title="Archive Account"
                           className="p-1 text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 rounded"
                         >
@@ -224,6 +234,18 @@ export default function ChartOfAccounts() {
         )}
 
       </main>
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ isOpen: false, account: null, loading: false })}
+        onConfirm={handleConfirmArchive}
+        loading={confirmModal.loading}
+        title="Archive Account"
+        message={`Are you sure you want to archive "${confirmModal.account?.name}"?`}
+        confirmText="Archive"
+        variant="danger"
+        icon={Archive}
+      />
     </div>
   );
 }

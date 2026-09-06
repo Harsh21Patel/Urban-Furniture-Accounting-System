@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { productsApi } from '../../api/endpoints.js';
 import Navbar from '../../components/Navbar.jsx';
+import ConfirmModal from '../../components/ConfirmModal.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import {
   ArrowLeft,
@@ -38,6 +39,11 @@ export default function ProductForm() {
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [loading, setLoading] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    actionType: 'archive',
+    loading: false,
+  });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -116,23 +122,27 @@ export default function ProductForm() {
     }
   };
 
-  const handleArchive = async () => {
-    if (!window.confirm('Are you sure you want to archive this product?')) return;
-    try {
-      await productsApi.archive(id);
-      fetchProductDetails();
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to archive product');
-    }
+  const openArchiveModal = () => {
+    setConfirmModal({ isOpen: true, actionType: 'archive', loading: false });
   };
 
-  const handleUnarchive = async () => {
-    if (!window.confirm('Are you sure you want to restore/unarchive this product?')) return;
+  const openUnarchiveModal = () => {
+    setConfirmModal({ isOpen: true, actionType: 'unarchive', loading: false });
+  };
+
+  const handleConfirmAction = async () => {
+    setConfirmModal((prev) => ({ ...prev, loading: true }));
     try {
-      await productsApi.unarchive(id);
+      if (confirmModal.actionType === 'archive') {
+        await productsApi.archive(id);
+      } else {
+        await productsApi.unarchive(id);
+      }
+      setConfirmModal({ isOpen: false, actionType: 'archive', loading: false });
       fetchProductDetails();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to unarchive product');
+      setError(err.response?.data?.message || `Failed to ${confirmModal.actionType} product`);
+      setConfirmModal((prev) => ({ ...prev, loading: false }));
     }
   };
 
@@ -141,14 +151,6 @@ export default function ProductForm() {
       <Navbar />
 
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-4">
-        {/* Banner */}
-        <div className="bg-amber-50 border border-amber-200 rounded-md px-4 py-2 text-center dark:bg-amber-900/20 dark:border-amber-800/40">
-          <h2 className="text-sm font-bold text-amber-900 dark:text-amber-300">Master Data: Product Master Form</h2>
-          <p className="text-xs text-amber-800/80 dark:text-amber-400/80">
-            Define product details, category, default sales price, and default purchase cost.
-          </p>
-        </div>
-
         {/* Main Card */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md p-6 space-y-6">
           {/* Header Bar */}
@@ -189,7 +191,7 @@ export default function ProductForm() {
                 {productData?.archived ? (
                   <button
                     type="button"
-                    onClick={handleUnarchive}
+                    onClick={openUnarchiveModal}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 text-xs font-semibold"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
@@ -198,7 +200,7 @@ export default function ProductForm() {
                 ) : (
                   <button
                     type="button"
-                    onClick={handleArchive}
+                    onClick={openArchiveModal}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-900/20 dark:text-rose-400 text-xs font-semibold"
                   >
                     <Archive className="w-3.5 h-3.5" />
@@ -395,6 +397,22 @@ export default function ProductForm() {
           </form>
         </div>
       </main>
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ isOpen: false, actionType: 'archive', loading: false })}
+        onConfirm={handleConfirmAction}
+        loading={confirmModal.loading}
+        title={confirmModal.actionType === 'archive' ? 'Archive Product' : 'Restore Product'}
+        message={
+          confirmModal.actionType === 'archive'
+            ? `Are you sure you want to archive "${productData?.name || 'this product'}"? You can view or restore archived products at any time.`
+            : `Are you sure you want to restore "${productData?.name || 'this product'}"?`
+        }
+        confirmText={confirmModal.actionType === 'archive' ? 'Archive' : 'Restore'}
+        variant={confirmModal.actionType === 'archive' ? 'danger' : 'info'}
+        icon={confirmModal.actionType === 'archive' ? Archive : RotateCcw}
+      />
     </div>
   );
 }

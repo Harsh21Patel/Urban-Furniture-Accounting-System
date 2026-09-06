@@ -2,10 +2,14 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { reportsApi } from '../../api/endpoints.js';
 import Navbar from '../../components/Navbar.jsx';
-import { PieChart as PieIcon, LayoutList, LayoutGrid, ArrowLeft, Calendar, TrendingUp } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { PieChart as PieIcon, LayoutList, LayoutGrid, ArrowLeft, TrendingUp } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
-const COLORS = ['#10b981', '#6366f1', '#f59e0b', '#ef4444', '#8b5cf6'];
+const COLORS = [
+  '#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+  '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#14b8a6',
+  '#a855f7', '#3b82f6', '#e11d48', '#22c55e', '#eab308',
+];
 
 export default function BudgetReport() {
   const [rows, setRows] = useState([]);
@@ -138,30 +142,59 @@ export default function BudgetReport() {
                 <span>Budget Visual Breakdown (Achieved Allocation)</span>
               </h2>
 
-              <div className="h-80 w-full">
+              {/* Donut Chart — no inline labels */}
+              <div className="h-64 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={chartData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={5}
+                      innerRadius={65}
+                      outerRadius={105}
+                      paddingAngle={3}
                       dataKey="value"
-                      label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                      label={false}
+                      labelLine={false}
                     >
                       {chartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />
                       ))}
                     </Pie>
                     <Tooltip
-                      formatter={(val) => `₹${Number(val).toLocaleString('en-IN')}`}
-                      contentStyle={{ backgroundColor: '#111827', borderColor: '#374151', borderRadius: '6px', color: '#fff' }}
+                      formatter={(val, name) => [`₹${Number(val).toLocaleString('en-IN')}`, name]}
+                      contentStyle={{
+                        backgroundColor: '#1f2937',
+                        borderColor: '#374151',
+                        borderRadius: '8px',
+                        color: '#f9fafb',
+                        fontSize: '12px',
+                        padding: '10px 14px',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+                      }}
+                      itemStyle={{ color: '#d1d5db' }}
+                      labelStyle={{ color: '#ffffff', fontWeight: 700, marginBottom: 4 }}
                     />
-                    <Legend />
                   </PieChart>
                 </ResponsiveContainer>
+              </div>
+
+              {/* Custom Legend — 2-col grid, clean chips */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+                {chartData.map((entry, index) => (
+                  <div key={index} className="flex items-center gap-2 min-w-0">
+                    <span
+                      className="flex-shrink-0 w-2.5 h-2.5 rounded-full"
+                      style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                    />
+                    <span className="text-xs text-gray-700 dark:text-gray-300 truncate" title={entry.name}>
+                      {entry.name}
+                    </span>
+                    <span className="ml-auto flex-shrink-0 text-[11px] font-semibold text-gray-500 dark:text-gray-400">
+                      ₹{Number(entry.value).toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
 

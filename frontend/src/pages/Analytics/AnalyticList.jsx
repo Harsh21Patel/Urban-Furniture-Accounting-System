@@ -47,13 +47,6 @@ export default function AnalyticList() {
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-4">
-        
-        {/* Banner */}
-        <div className="bg-amber-50 border border-amber-200 rounded-md px-4 py-2 text-center dark:bg-amber-900/20 dark:border-amber-800/40">
-          <h2 className="text-xs font-bold text-amber-900 dark:text-amber-300">Analyticals Form & Master View</h2>
-          <p className="text-xs text-amber-800/80 dark:text-amber-400/80">Analytic Accounts (Income / Expense) linked to budget tracking line items.</p>
-        </div>
-
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-md">
           <div className="flex items-center gap-3">

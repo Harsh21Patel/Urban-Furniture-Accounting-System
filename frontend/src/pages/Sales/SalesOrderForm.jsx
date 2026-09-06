@@ -11,7 +11,7 @@ export default function SalesOrderForm() {
 
   const [contactId, setContactId] = useState('');
   const [lines, setLines] = useState([
-    { productId: '', quantity: 1, unitPrice: 0, taxPercent: 18, analyticId: '' },
+    { productId: '', quantity: 1, unitPrice: 0, discountPercent: 0, taxPercent: 18, analyticId: '' },
   ]);
 
   const [error, setError] = useState('');
@@ -33,6 +33,7 @@ export default function SalesOrderForm() {
               productId: pRes.data[0].id,
               quantity: 5,
               unitPrice: Number(pRes.data[0].salesPrice),
+              discountPercent: 0,
               taxPercent: 18,
               analyticId: anRes.data?.[0]?.id || '',
             },
@@ -65,6 +66,7 @@ export default function SalesOrderForm() {
         productId: products[0]?.id || '',
         quantity: 1,
         unitPrice: Number(products[0]?.salesPrice || 0),
+        discountPercent: 0,
         taxPercent: 18,
         analyticId: analytics[0]?.id || '',
       },
@@ -77,15 +79,21 @@ export default function SalesOrderForm() {
   };
 
   const subtotal = lines.reduce((s, l) => s + (parseFloat(l.quantity) || 0) * (parseFloat(l.unitPrice) || 0), 0);
-  const taxTotal = lines.reduce(
-    (s, l) =>
-      s +
-      (parseFloat(l.quantity) || 0) *
-        (parseFloat(l.unitPrice) || 0) *
-        ((parseFloat(l.taxPercent) || 0) / 100),
-    0
-  );
-  const grandTotal = subtotal + taxTotal;
+  const discountTotal = lines.reduce((s, l) => {
+    const q = parseFloat(l.quantity) || 0;
+    const p = parseFloat(l.unitPrice) || 0;
+    const d = parseFloat(l.discountPercent) || 0;
+    return s + q * p * (d / 100);
+  }, 0);
+  const taxTotal = lines.reduce((s, l) => {
+    const q = parseFloat(l.quantity) || 0;
+    const p = parseFloat(l.unitPrice) || 0;
+    const d = parseFloat(l.discountPercent) || 0;
+    const t = parseFloat(l.taxPercent) || 0;
+    const taxable = q * p * (1 - d / 100);
+    return s + taxable * (t / 100);
+  }, 0);
+  const grandTotal = subtotal - discountTotal + taxTotal;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -102,6 +110,7 @@ export default function SalesOrderForm() {
           productId: Number(l.productId),
           quantity: Number(l.quantity),
           unitPrice: parseFloat(l.unitPrice),
+          discountPercent: parseFloat(l.discountPercent || 0),
           taxPercent: parseFloat(l.taxPercent || 0),
           analyticId: l.analyticId ? Number(l.analyticId) : null,
         })),
@@ -133,7 +142,7 @@ export default function SalesOrderForm() {
               </button>
               <div>
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white">Create Sales Order</h1>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Select Customer, Products, Quantities, Unit Prices, and Taxes</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Select Customer, Products, Quantities, Unit Prices, Discounts, and Taxes</p>
               </div>
             </div>
           </div>
@@ -185,20 +194,23 @@ export default function SalesOrderForm() {
                   <thead className="bg-gray-50 dark:bg-gray-800/60 text-gray-600 dark:text-gray-400 uppercase font-semibold text-[11px]">
                     <tr>
                       <th className="px-3 py-2">Product</th>
-                      <th className="px-3 py-2 w-24">Quantity</th>
-                      <th className="px-3 py-2 w-32">Unit Price (Rs.)</th>
-                      <th className="px-3 py-2 w-24">Tax %</th>
+                      <th className="px-3 py-2 w-20">Quantity</th>
+                      <th className="px-3 py-2 w-28">Unit Price (Rs.)</th>
+                      <th className="px-3 py-2 w-20">Disc %</th>
+                      <th className="px-3 py-2 w-20">Tax %</th>
                       <th className="px-3 py-2">Analytic Account</th>
-                      <th className="px-3 py-2 text-right w-32">Line Total</th>
+                      <th className="px-3 py-2 text-right w-28">Line Total</th>
                       <th className="px-2 py-2 w-10"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                     {lines.map((l, idx) => {
-                      const lineTotal =
-                        (parseFloat(l.quantity) || 0) *
-                        (parseFloat(l.unitPrice) || 0) *
-                        (1 + (parseFloat(l.taxPercent) || 0) / 100);
+                      const q = parseFloat(l.quantity) || 0;
+                      const p = parseFloat(l.unitPrice) || 0;
+                      const d = parseFloat(l.discountPercent) || 0;
+                      const t = parseFloat(l.taxPercent) || 0;
+                      const taxable = q * p * (1 - d / 100);
+                      const lineTotal = taxable * (1 + t / 100);
 
                       return (
                         <tr key={idx} className="bg-white dark:bg-gray-900">
@@ -209,9 +221,9 @@ export default function SalesOrderForm() {
                               onChange={(e) => handleProductSelect(idx, e.target.value)}
                               className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-2 py-1 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary font-medium"
                             >
-                              {products.map((p) => (
-                                <option key={p.id} value={p.id}>
-                                  {p.name} (₹{Number(p.salesPrice)})
+                              {products.map((prod) => (
+                                <option key={prod.id} value={prod.id}>
+                                  {prod.name} (₹{Number(prod.salesPrice)})
                                 </option>
                               ))}
                             </select>
@@ -236,6 +248,19 @@ export default function SalesOrderForm() {
                               value={l.unitPrice}
                               onChange={(e) => handleLineChange(idx, 'unitPrice', e.target.value)}
                               className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-2 py-1 text-xs text-gray-900 dark:text-white font-bold text-right focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                            />
+                          </td>
+
+                          <td className="p-1.5">
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              max="100"
+                              value={l.discountPercent}
+                              onChange={(e) => handleLineChange(idx, 'discountPercent', e.target.value)}
+                              className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-2 py-1 text-xs text-gray-900 dark:text-white text-center focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                              placeholder="0"
                             />
                           </td>
 
@@ -292,6 +317,12 @@ export default function SalesOrderForm() {
                   <span>Subtotal:</span>
                   <span className="font-mono">₹{subtotal.toFixed(2)}</span>
                 </div>
+                {discountTotal > 0 && (
+                  <div className="flex justify-between text-rose-600 dark:text-rose-400 font-medium">
+                    <span>Discount Amount:</span>
+                    <span className="font-mono">-₹{discountTotal.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-gray-500 dark:text-gray-400">
                   <span>Tax Amount:</span>
                   <span className="font-mono">₹{taxTotal.toFixed(2)}</span>

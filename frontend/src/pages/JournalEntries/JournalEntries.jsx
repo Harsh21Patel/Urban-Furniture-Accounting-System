@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { journalEntriesApi, journalsApi, accountsApi, contactsApi, analyticsApi } from '../../api/endpoints.js';
 import Navbar from '../../components/Navbar.jsx';
-import { Plus, ArrowLeft, AlertTriangle, Check, Trash2, ShieldAlert } from 'lucide-react';
+import { Plus, ArrowLeft, AlertTriangle, Check, Trash2, ShieldAlert, Filter, Search } from 'lucide-react';
 
 export default function JournalEntries() {
   const [entries, setEntries] = useState([]);
@@ -10,6 +10,10 @@ export default function JournalEntries() {
   const [accounts, setAccounts] = useState([]);
   const [contacts, setContacts] = useState([]);
   const [analytics, setAnalytics] = useState([]);
+
+  // Filter state
+  const [selectedFilter, setSelectedFilter] = useState('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -116,24 +120,39 @@ export default function JournalEntries() {
     }
   };
 
+  // Filtered Entries Logic
+  const filteredEntries = entries.filter((e) => {
+    if (selectedFilter !== 'ALL') {
+      if (selectedFilter.startsWith('TYPE:')) {
+        const type = selectedFilter.replace('TYPE:', '');
+        if (e.journal?.type !== type) return false;
+      } else if (selectedFilter.startsWith('ID:')) {
+        const id = selectedFilter.replace('ID:', '');
+        if (String(e.journalId) !== String(id)) return false;
+      }
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const refMatch = (e.reference || `ENTRY/#${e.id}`).toLowerCase().includes(q);
+      const journalMatch = e.journal?.name?.toLowerCase().includes(q);
+      const partnerMatch = e.lines?.some((l) => l.partner?.name?.toLowerCase().includes(q));
+      const accountMatch = e.lines?.some((l) => l.account?.name?.toLowerCase().includes(q));
+      if (!refMatch && !journalMatch && !partnerMatch && !accountMatch) return false;
+    }
+    return true;
+  });
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 pb-16">
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-4">
-        
-        {/* Banner */}
-        <div className="bg-amber-50 border border-amber-200 rounded-md px-4 py-2 text-center dark:bg-amber-900/20 dark:border-amber-800/40">
-          <h2 className="text-xs font-bold text-amber-900 dark:text-amber-300">Journals & Journal Entries (List View)</h2>
-          <p className="text-xs text-amber-800/80 dark:text-amber-400/80">Double-entry accounting log. Blocking warning enforced if Debit and Credit totals do not match.</p>
-        </div>
-
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-md">
+        {/* Header with Search & Unified Journal Filter next to New Journal Entry Button */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-md shadow-sm">
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/dashboard')}
-              className="p-2 rounded bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+              className="p-2 rounded bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
@@ -143,21 +162,68 @@ export default function JournalEntries() {
             </div>
           </div>
 
-          <button
-            onClick={() => setShowModal(true)}
-            className="flex items-center gap-1.5 bg-primary hover:bg-primary-hover dark:bg-primary-dark text-white text-xs font-semibold px-3 py-2 rounded transition"
-          >
-            <Plus className="w-4 h-4" />
-            <span>New Journal Entry</span>
-          </button>
+          {/* Action Toolbar & Filters */}
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Search Box */}
+            <div className="relative min-w-[180px]">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search entries..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-3 py-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            {/* Single Unified Journal Filter */}
+            <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-2.5 py-1.5 rounded text-xs">
+              <Filter className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+              <span className="font-semibold text-gray-600 dark:text-gray-300 text-[11px]">Journal:</span>
+              <select
+                value={selectedFilter}
+                onChange={(e) => setSelectedFilter(e.target.value)}
+                className="bg-transparent font-medium text-gray-900 dark:text-white focus:outline-none cursor-pointer text-xs"
+              >
+                <option value="ALL" className="dark:bg-gray-900">All Journals</option>
+                <optgroup label="By Journal Type" className="dark:bg-gray-900 text-gray-400 font-semibold">
+                  <option value="TYPE:SALES" className="dark:bg-gray-900">Sales (Customer Invoices)</option>
+                  <option value="TYPE:PURCHASE" className="dark:bg-gray-900">Purchase (Vendor Bills)</option>
+                  <option value="TYPE:BANK" className="dark:bg-gray-900">Bank Operations</option>
+                  <option value="TYPE:CASH" className="dark:bg-gray-900">Cash Operations</option>
+                  <option value="TYPE:MISC" className="dark:bg-gray-900">Miscellaneous (General)</option>
+                </optgroup>
+                {journals.length > 0 && (
+                  <optgroup label="By Specific Journal" className="dark:bg-gray-900 text-gray-400 font-semibold">
+                    {journals.map((j) => (
+                      <option key={j.id} value={`ID:${j.id}`} className="dark:bg-gray-900">
+                        {j.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
+              </select>
+            </div>
+
+            {/* New Journal Entry Button */}
+            <button
+              onClick={() => setShowModal(true)}
+              className="flex items-center gap-1.5 bg-primary hover:bg-primary-hover dark:bg-primary-dark text-white text-xs font-semibold px-3 py-2 rounded transition shadow-sm"
+            >
+              <Plus className="w-4 h-4" />
+              <span>New Journal Entry</span>
+            </button>
+          </div>
         </div>
 
         {/* List View Table */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md overflow-hidden">
           {loading ? (
             <div className="text-center py-12 text-xs text-gray-500 dark:text-gray-400">Loading journal entries...</div>
-          ) : entries.length === 0 ? (
-            <div className="text-center py-12 text-xs text-gray-500 dark:text-gray-400">No journal entries recorded yet.</div>
+          ) : filteredEntries.length === 0 ? (
+            <div className="text-center py-12 text-xs text-gray-500 dark:text-gray-400">
+              {entries.length === 0 ? 'No journal entries recorded yet.' : 'No journal entries match the selected filters.'}
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs text-gray-700 dark:text-gray-300">
@@ -173,7 +239,7 @@ export default function JournalEntries() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-                  {entries.map((e) => {
+                  {filteredEntries.map((e) => {
                     const entryDebit = e.lines?.reduce((s, l) => s + Number(l.debit), 0) || 0;
                     const entryCredit = e.lines?.reduce((s, l) => s + Number(l.credit), 0) || 0;
                     const partnerName = e.lines?.find((l) => l.partner)?.partner?.name || '-';

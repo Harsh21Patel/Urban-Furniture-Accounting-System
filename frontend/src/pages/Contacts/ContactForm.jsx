@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { contactsApi, authApi } from '../../api/endpoints.js';
 import Navbar from '../../components/Navbar.jsx';
+import ConfirmModal from '../../components/ConfirmModal.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import {
   ArrowLeft,
@@ -53,6 +54,13 @@ export default function ContactForm() {
   const [portalError, setPortalError] = useState('');
   const [portalSuccess, setPortalSuccess] = useState('');
   const [portalLoading, setPortalLoading] = useState(false);
+
+  // Archive modal state
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    actionType: 'archive',
+    loading: false,
+  });
 
   const navigate = useNavigate();
 
@@ -139,23 +147,27 @@ export default function ContactForm() {
     }
   };
 
-  const handleArchive = async () => {
-    if (!window.confirm('Are you sure you want to archive this contact?')) return;
-    try {
-      await contactsApi.archive(id);
-      fetchContactDetails();
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to archive contact');
-    }
+  const openArchiveModal = () => {
+    setConfirmModal({ isOpen: true, actionType: 'archive', loading: false });
   };
 
-  const handleUnarchive = async () => {
-    if (!window.confirm('Are you sure you want to unarchive/restore this contact?')) return;
+  const openUnarchiveModal = () => {
+    setConfirmModal({ isOpen: true, actionType: 'unarchive', loading: false });
+  };
+
+  const handleConfirmAction = async () => {
+    setConfirmModal((prev) => ({ ...prev, loading: true }));
     try {
-      await contactsApi.unarchive(id);
+      if (confirmModal.actionType === 'archive') {
+        await contactsApi.archive(id);
+      } else {
+        await contactsApi.unarchive(id);
+      }
+      setConfirmModal({ isOpen: false, actionType: 'archive', loading: false });
       fetchContactDetails();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to unarchive contact');
+      setError(err.response?.data?.message || `Failed to ${confirmModal.actionType} contact`);
+      setConfirmModal((prev) => ({ ...prev, loading: false }));
     }
   };
 
@@ -204,14 +216,6 @@ export default function ContactForm() {
       <Navbar />
 
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-4">
-        {/* Master Data Title Banner */}
-        <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded px-4 py-2 text-center">
-          <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100">Master Data: Contact Form View</h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Define customer/vendor attributes and provision portal authentication access.
-          </p>
-        </div>
-
         {/* Main Card */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md p-6 space-y-6">
           {/* Header Bar */}
@@ -252,7 +256,7 @@ export default function ContactForm() {
                 {contactData?.archived ? (
                   <button
                     type="button"
-                    onClick={handleUnarchive}
+                    onClick={openUnarchiveModal}
                     className="flex items-center gap-1 px-3 py-1.5 rounded bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 text-xs font-medium"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
@@ -261,7 +265,7 @@ export default function ContactForm() {
                 ) : (
                   <button
                     type="button"
-                    onClick={handleArchive}
+                    onClick={openArchiveModal}
                     className="flex items-center gap-1 px-3 py-1.5 rounded bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300 border border-red-200 dark:border-red-800/60 text-xs font-medium"
                   >
                     <Archive className="w-3.5 h-3.5" />
@@ -607,6 +611,22 @@ export default function ContactForm() {
           )}
         </div>
       </main>
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ isOpen: false, actionType: 'archive', loading: false })}
+        onConfirm={handleConfirmAction}
+        loading={confirmModal.loading}
+        title={confirmModal.actionType === 'archive' ? 'Archive Contact' : 'Restore Contact'}
+        message={
+          confirmModal.actionType === 'archive'
+            ? `Are you sure you want to archive "${contactData?.name || 'this contact'}"? You can view or restore archived contacts at any time.`
+            : `Are you sure you want to restore "${contactData?.name || 'this contact'}"?`
+        }
+        confirmText={confirmModal.actionType === 'archive' ? 'Archive' : 'Restore'}
+        variant={confirmModal.actionType === 'archive' ? 'danger' : 'info'}
+        icon={confirmModal.actionType === 'archive' ? Archive : RotateCcw}
+      />
     </div>
   );
 }
